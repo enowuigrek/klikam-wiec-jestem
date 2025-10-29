@@ -180,48 +180,15 @@
 
         /* Roślina */
         .plant {
-            position: absolute;
-            bottom: 22%;
-            left: 8%;
-            width: 60px;
-            height: 100px;
-            z-index: 4;
+            display: none;
         }
 
         .plant-pot {
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50px;
-            height: 35px;
-            background: #8b4513;
-            border-radius: 5px 5px 15px 15px;
+            display: none;
         }
 
         .plant-leaf {
-            position: absolute;
-            width: 25px;
-            height: 40px;
-            background: #2d5016;
-            border-radius: 50% 50% 50% 0;
-            bottom: 30px;
-        }
-
-        .plant-leaf:nth-child(1) {
-            left: 5px;
-            transform: rotate(-30deg);
-        }
-
-        .plant-leaf:nth-child(2) {
-            left: 15px;
-            transform: rotate(-10deg);
-            background: #3a6b1f;
-        }
-
-        .plant-leaf:nth-child(3) {
-            right: 5px;
-            transform: rotate(30deg) scaleX(-1);
+            display: none;
         }
 
         /* Kubek kawy */
@@ -497,97 +464,36 @@
 
         /* Lampka */
         .lamp {
-            position: absolute;
-            top: 8%;
-            left: 15%;
-            width: 80px;
-            height: 120px;
-            z-index: 4;
+            display: none;
         }
 
         .lamp-cord {
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 30px;
-            background: #333;
+            display: none;
         }
 
         .lamp-shade {
-            position: absolute;
-            top: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 60px;
-            height: 40px;
-            background: linear-gradient(to bottom, #ffd700 0%, #ffed4e 100%);
-            border-radius: 0 0 20px 20px;
-            border: 3px solid #d4af37;
-            box-shadow: 0 10px 30px rgba(255,215,0,0.4);
+            display: none;
         }
 
         .lamp-light {
-            position: absolute;
-            top: 70px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 120px;
-            height: 100px;
-            background: radial-gradient(ellipse at top, rgba(255,235,59,0.3) 0%, transparent 70%);
-            pointer-events: none;
-            filter: blur(15px);
+            display: none;
         }
 
         /* Fotel */
         .armchair {
-            position: absolute;
-            bottom: 22%;
-            right: 25%;
-            width: 80px;
-            height: 90px;
-            z-index: 4;
+            display: none;
         }
 
         .armchair-back {
-            position: absolute;
-            bottom: 30px;
-            left: 10px;
-            width: 60px;
-            height: 50px;
-            background: #8b4789;
-            border-radius: 15px 15px 0 0;
-            border: 3px solid #6a356a;
+            display: none;
         }
 
         .armchair-seat {
-            position: absolute;
-            bottom: 15px;
-            left: 5px;
-            width: 70px;
-            height: 25px;
-            background: #8b4789;
-            border-radius: 10px;
-            border: 3px solid #6a356a;
+            display: none;
         }
 
         .armchair-arm {
-            position: absolute;
-            bottom: 20px;
-            width: 15px;
-            height: 35px;
-            background: #8b4789;
-            border-radius: 8px;
-            border: 3px solid #6a356a;
-        }
-
-        .armchair-arm:first-of-type {
-            left: 0;
-        }
-
-        .armchair-arm:last-of-type {
-            right: 0;
+            display: none;
         }
 
         /* Notyfikacja osiągnięcia */
@@ -743,9 +649,6 @@
             #actionButtons { max-width: 100%; gap: 8px; bottom: 10px; padding: 0 10px; width: calc(100% - 20px); }
             #zdkButton { font-size: 26px; padding: 20px 40px; }
             .window-light { width: 350px; height: 350px; }
-            .plant { left: 5%; bottom: 20%; transform: scale(0.7); }
-            .lamp { left: 10%; top: 10%; transform: scale(0.7); }
-            .armchair { right: 15%; bottom: 20%; transform: scale(0.7); }
             #achievementsPanel { width: 100%; right: -100%; }
             .install-hint { font-size: 10px; max-width: 250px; }
             #uiContainer { top: 10px; left: 10px; gap: 8px; }
@@ -778,29 +681,6 @@
 
         <!-- Światło z okna -->
         <div class="window-light" id="windowLight"></div>
-
-        <!-- Lampka -->
-        <div class="lamp">
-            <div class="lamp-cord"></div>
-            <div class="lamp-shade"></div>
-            <div class="lamp-light"></div>
-        </div>
-
-        <!-- Roślina -->
-        <div class="plant">
-            <div class="plant-leaf"></div>
-            <div class="plant-leaf"></div>
-            <div class="plant-leaf"></div>
-            <div class="plant-pot"></div>
-        </div>
-
-        <!-- Fotel -->
-        <div class="armchair">
-            <div class="armchair-arm"></div>
-            <div class="armchair-back"></div>
-            <div class="armchair-seat"></div>
-            <div class="armchair-arm"></div>
-        </div>
     </div>
 </div>
 
@@ -1262,12 +1142,17 @@
                     Odliczenia:<br>
                     ${taxes.map(tax => `• ${tax.name}: -${tax.amount.toFixed(2)} zł`).join('<br>')}
                     <br><br>
-                    <strong style="color: #ff6b6b; font-size: 24px;">Do wypłaty: ${Math.max(0, remaining).toFixed(2)} zł</strong>
+                    <strong style="color: #ff6b6b; font-size: 24px;">Do wypłaty: 0.00 zł</strong>
                     <br><br>
                     <span style="opacity: 0.7; font-size: 14px;">
-                        ${remaining <= 0 ? 'Niestety podatki pochłonęły całą premię. Witaj w rzeczywistości! 🇵🇱' : 'Gratulacje! Udało Ci się coś zachować!'}
+                        Niestety podatki pochłonęły całą premię.
                     </span>
                 `;
+
+            // Wyzeruj premię po wypłacie
+            bonusAmount = 0;
+            bonusDisplay.textContent = '0.00';
+            saveGame();
         }
         modal.classList.add('show');
     });
