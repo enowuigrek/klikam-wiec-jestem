@@ -363,7 +363,7 @@ function showPaymentForm() {
             </div>
 
             <label style="display:block;margin-bottom:5px;font-size:14px">Imię i nazwisko:</label>
-            <input type="text" id="cardName" placeholder="Jan Kowalski" style="width:100%;padding:12px;margin-bottom:20px;background:#2d3748;color:white;border:2px solid #667eea;border-radius:8px;font-family:inherit;font-size:16px">
+            <input type="text" id="cardName" placeholder="Katarzyna Woźniak" style="width:100%;padding:12px;margin-bottom:20px;background:#2d3748;color:white;border:2px solid #667eea;border-radius:8px;font-family:inherit;font-size:16px">
 
             <button id="confirmPayment" style="width:100%;padding:15px;font-size:18px;background:#10b981;color:white;border:3px solid #047857;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:bold;margin-bottom:10px">✓ Zapłać 3000 zł</button>
             <button id="cancelPayment" style="width:100%;padding:12px;font-size:16px;background:#ff6b6b;color:white;border:3px solid #c92a2a;border-radius:10px;cursor:pointer;font-family:inherit">✗ Anuluj</button>
@@ -461,44 +461,100 @@ function generateShareImage() {
     // Player name box on wall
     if (playerName) {
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
-        ctx.fillRect(150, 140, 300, 60);
+        ctx.fillRect(150, 150, 300, 60);
         ctx.fillStyle = '#00ff88';
         ctx.font = 'bold 32px "Courier New"';
-        ctx.fillText(playerName, 300, 180);
+        ctx.fillText(playerName, 300, 190);
     }
 
-    // Stats on floor (3 boxes side by side)
-    const floorStats = [
-        { label: '💼', value: clickCount, x: 100, color: '#00ff88' },
-        { label: '💰', value: bonusAmount.toFixed(2) + ' zł', x: 300, color: '#ffd700' },
-        { label: '⭐', value: prestigeLevel, x: 500, color: '#667eea' }
-    ];
+    // Achievement title based on clicks
+    let achievementTitle = '';
+    let achievementIcon = '';
+    if (clickCount >= 10000) {
+        achievementTitle = 'Bóg Klikania';
+        achievementIcon = '🌟';
+    } else if (clickCount >= 5000) {
+        achievementTitle = 'Legenda';
+        achievementIcon = '👑';
+    } else if (clickCount >= 2500) {
+        achievementTitle = 'Uzależniony';
+        achievementIcon = '🔥';
+    } else if (clickCount >= 1000) {
+        achievementTitle = 'Klikalny niewolnik';
+        achievementIcon = '⛓️';
+    } else if (clickCount >= 500) {
+        achievementTitle = 'Ekspert';
+        achievementIcon = '⭐';
+    } else if (clickCount >= 250) {
+        achievementTitle = 'Oddany';
+        achievementIcon = '🎯';
+    } else if (clickCount >= 100) {
+        achievementTitle = 'Pracowity';
+        achievementIcon = '💼';
+    } else if (clickCount >= 50) {
+        achievementTitle = 'Nowicjusz';
+        achievementIcon = '🔰';
+    } else if (clickCount >= 1) {
+        achievementTitle = 'Pierwszy krok';
+        achievementIcon = '👶';
+    }
 
-    floorStats.forEach(stat => {
-        const boxWidth = 150;
-        const boxHeight = 120;
-        const boxX = stat.x - boxWidth / 2;
-        const boxY = 660;
-
-        // Box background
-        ctx.fillStyle = 'rgba(0,0,0,0.6)';
-        ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
-
-        // Border
-        ctx.strokeStyle = stat.color;
-        ctx.lineWidth = 3;
-        ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
-
-        // Emoji/Icon
-        ctx.font = '32px "Courier New"';
-        ctx.textAlign = 'center';
-        ctx.fillText(stat.label, stat.x, boxY + 45);
-
-        // Value
-        ctx.fillStyle = stat.color;
+    // Achievement title below name
+    if (achievementTitle) {
+        ctx.fillStyle = '#f093fb';
         ctx.font = 'bold 24px "Courier New"';
-        ctx.fillText(stat.value.toString(), stat.x, boxY + 90);
-    });
+        ctx.fillText(`${achievementIcon} ${achievementTitle}`, 300, 240);
+    }
+
+    // Big stats display in center of wall
+    const centerY = 380;
+
+    // Clicks
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(75, centerY - 80, 150, 110);
+    ctx.strokeStyle = '#00ff88';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(75, centerY - 80, 150, 110);
+    ctx.fillStyle = '#00ff88';
+    ctx.font = '28px "Courier New"';
+    ctx.fillText('💼', 150, centerY - 45);
+    ctx.font = 'bold 32px "Courier New"';
+    ctx.fillText(clickCount.toString(), 150, centerY - 5);
+    ctx.font = '14px "Courier New"';
+    ctx.fillText('kliknięć', 150, centerY + 18);
+
+    // Bonus
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(225, centerY - 80, 150, 110);
+    ctx.strokeStyle = '#ffd700';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(225, centerY - 80, 150, 110);
+    ctx.fillStyle = '#ffd700';
+    ctx.font = '28px "Courier New"';
+    ctx.fillText('💰', 300, centerY - 45);
+    ctx.font = 'bold 28px "Courier New"';
+    ctx.fillText(bonusAmount.toFixed(0) + ' zł', 300, centerY - 5);
+    ctx.font = '14px "Courier New"';
+    ctx.fillText('premia', 300, centerY + 18);
+
+    // Prestige
+    ctx.fillStyle = 'rgba(0,0,0,0.5)';
+    ctx.fillRect(375, centerY - 80, 150, 110);
+    ctx.strokeStyle = '#667eea';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(375, centerY - 80, 150, 110);
+    ctx.fillStyle = '#667eea';
+    ctx.font = '28px "Courier New"';
+    ctx.fillText('⭐', 450, centerY - 45);
+    ctx.font = 'bold 32px "Courier New"';
+    ctx.fillText(prestigeLevel.toString(), 450, centerY - 5);
+    ctx.font = '14px "Courier New"';
+    ctx.fillText('prestige', 450, centerY + 18);
+
+    // Footer on floor
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = '18px "Courier New"';
+    ctx.fillText('klikam-wiec-jestem.netlify.app', 300, 740);
 
     // Convert to blob and share/download
     canvas.toBlob(blob => {
@@ -585,7 +641,7 @@ statsBtn.addEventListener('click', () => {
                     Spróbuj ponownie <strong>jutro</strong>.
                 </p>
                 <p style="font-size:12px; opacity:0.6; font-style:italic;">
-                    Kod błędu: RICHMAN_IS_UNAVAILABLE
+                    Kod błędu: RICHMAN_IS_ON_ELQUATRO
                 </p>
             </div>
         `;

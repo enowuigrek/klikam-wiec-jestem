@@ -233,12 +233,12 @@ body {
 
 .ui-box {
     background: rgba(0,0,0,0.8);
-    padding: 12px 20px;
-    border-radius: 12px;
-    border: 3px solid #00ff88;
+    padding: 8px 14px;
+    border-radius: 10px;
+    border: 2px solid #00ff88;
     box-shadow: 0 4px 20px rgba(0,255,136,0.3);
     color: white;
-    font-size: 18px;
+    font-size: 14px;
 }
 
 .ui-box.bonus {
@@ -246,8 +246,13 @@ body {
     box-shadow: 0 4px 20px rgba(255,215,0,0.3);
 }
 
+.ui-label {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
 .ui-value {
-    font-size: 24px;
+    font-size: 18px;
     font-weight: bold;
     color: #00ff88;
 }
@@ -777,7 +782,10 @@ body {
 /* Mobile */
 @media (max-width: 768px) {
     .title { font-size: 36px; }
-    .ui-box { font-size: 14px; padding: 10px 16px; }
+    #uiContainer { gap: 8px; }
+    .ui-box { font-size: 12px; padding: 6px 10px; }
+    .ui-value { font-size: 16px; }
+    .ui-label { font-size: 11px; }
     .window { width: 180px; height: 160px; right: 5%; top: 12%; }
     #zdkButton { font-size: 26px; padding: 20px 40px; }
     #achievementsPanel, .menu-panel { width: 100%; right: -100%; }
