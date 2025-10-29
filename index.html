@@ -1,4 +1,15 @@
-<!DOCTYPE html>
+let clickCount = 0;
+let bonusAmount = 0;
+let prestigeLevel = 0;
+let playerName = '';
+const button = document.getElementById('zdkButton');
+const countDisplay = document.getElementById('clickCount');
+const bonusDisplay = document.getElementById('bonusAmount');
+const prestigeDisplay = document.getElementById('prestigeLevel');
+const titleScreen = document.getElementById('titleScreen');
+const startButton = document.getElementById('startButton');
+const playerNameInput = document.getElementById('playerNameInput');
+const windowEl = document.getElementById('window');<!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
@@ -116,6 +127,44 @@
             text-align: center;
             max-width: 300px;
             line-height: 1.5;
+        }
+
+        /* Formularz imienia */
+        .name-input-container {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .name-input-label {
+            font-size: 16px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        #playerNameInput {
+            padding: 12px 20px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            background: rgba(255,255,255,0.1);
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            width: 250px;
+            max-width: 80%;
+            transition: all 0.3s;
+        }
+
+        #playerNameInput:focus {
+            outline: none;
+            border-color: #00ff88;
+            background: rgba(255,255,255,0.15);
+            box-shadow: 0 0 20px rgba(0,255,136,0.3);
+        }
+
+        #playerNameInput::placeholder {
+            color: rgba(255,255,255,0.5);
         }
 
         /* Tło gry - pokój */
@@ -413,8 +462,8 @@
 
         .action-btn.help {
             position: fixed;
-            top: 20px;
-            right: 20px;
+            bottom: 140px;
+            left: 30px;
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             border-color: #047857;
             box-shadow: 0 4px 15px rgba(16,185,129,0.4);
@@ -683,7 +732,7 @@
             .window { width: 180px; height: 160px; right: 5%; top: 12%; }
             .celestial { width: 35px; height: 35px; }
             .action-btn { font-size: 13px; padding: 12px 12px; }
-            .action-btn.help { font-size: 18px; padding: 10px 14px; top: 10px; right: 10px; }
+            .action-btn.help { font-size: 18px; padding: 10px 14px; bottom: 20px; left: 20px; }
             #actionButtons { max-width: 100%; gap: 8px; bottom: 10px; padding: 0 10px; width: calc(100% - 20px); }
             #zdkButton { font-size: 26px; padding: 20px 40px; }
             .window-light { width: 350px; height: 350px; }
@@ -713,6 +762,10 @@
 <!-- Ekran tytułowy -->
 <div id="titleScreen">
     <div class="title">KLIKAM<br>WIĘC<br>JESTEM</div>
+    <div class="name-input-container">
+        <label class="name-input-label" for="playerNameInput">Jak się nazywasz?</label>
+        <input type="text" id="playerNameInput" placeholder="Twoje imię" maxlength="20">
+    </div>
     <button id="startButton">KLIK</button>
     <div class="install-hint">
         💡 Dodaj do ekranu głównego telefonu:<br>
@@ -911,11 +964,15 @@
             prestigeLevel = state.prestige || 0;
             currentTimeIndex = state.timeIndex || 0;
             buttonSpeed = state.speed || 1;
+            playerName = state.playerName || '';
             unlockedAchievements = new Set(state.achievements || []);
             seenTimes = new Set(state.seenTimes || []);
             countDisplay.textContent = clickCount;
             bonusDisplay.textContent = bonusAmount.toFixed(2);
             prestigeDisplay.textContent = prestigeLevel;
+            if (playerName) {
+                playerNameInput.value = playerName;
+            }
             updateTimeOfDay();
             updateAchievementsList();
             updatePrestigeButton();
@@ -929,6 +986,7 @@
             prestige: prestigeLevel,
             timeIndex: currentTimeIndex,
             speed: buttonSpeed,
+            playerName: playerName,
             achievements: Array.from(unlockedAchievements),
             seenTimes: Array.from(seenTimes)
         };
@@ -1186,7 +1244,8 @@
     }
 
     shareBtn.addEventListener('click', () => {
-        const text = `🎮 Klikam więc jestem\n\n💼 Kliknięcia: ${clickCount}\n💰 Premia: ${bonusAmount.toFixed(2)} zł\n⭐ Prestige: ${prestigeLevel}\n🏆 Osiągnięcia: ${unlockedAchievements.size}/${achievements.length}\n\nSpróbuj sam!`;
+        const playerInfo = playerName ? `👤 Gracz: ${playerName}\n` : '';
+        const text = `🎮 Klikam więc jestem\n\n${playerInfo}💼 Kliknięcia: ${clickCount}\n💰 Premia: ${bonusAmount.toFixed(2)} zł\n⭐ Prestige: ${prestigeLevel}\n🏆 Osiągnięcia: ${unlockedAchievements.size}/${achievements.length}\n\nSpróbuj sam!`;
         if (navigator.share) {
             navigator.share({ title: 'Klikam więc jestem', text: text }).catch(() => {});
         } else {
@@ -1231,7 +1290,7 @@
 
     helpBtn.addEventListener('click', () => {
         modalTitle.textContent = '📖 Jak grać?';
-        modalText.innerHTML = `<div style="text-align:left;line-height:1.8"><strong style="color:#00ff88;font-size:20px">🎯 Cel gry:</strong><br>Klikaj przycisk ZDK, rozwijaj firmę i siebie! Zbieraj premie i awansuj przez system Prestige.<br><br><strong style="color:#ffd700;font-size:18px">💰 System premii:</strong><br>• Co 100 kliknięć = 2.09 zł premii<br>• Możesz wypłacać zebrane środki<br>• Bonus rośnie z poziomem Prestige<br><br><strong style="color:#667eea;font-size:18px">⭐ Prestige - co to?</strong><br>Prestige to reset postępu za permanentne bonusy!<br><br>• Odblokowanie: 10,000 kliknięć<br>• Reset: kliknięcia → 0, premia → 0<br>• Zachowujesz: osiągnięcia, poziom Prestige<br>• <span style="color:#00ff88">Bonus: +10% premii NA ZAWSZE!</span><br>• Przykład: Prestige 5 = dostajesz 150% premii<br><br><strong style="color:#f093fb;font-size:18px">🏆 Osiągnięcia (17):</strong><br>• Odblokowuj za kliknięcia i premie<br>• Zobacz pełną listę w panelu<br><br><strong style="color:#ff6b6b;font-size:18px">⚡ Mechanika trudności:</strong><br>• Co 100 kliknięć przycisk staje się szybszy<br>• Im wyższy poziom, tym większe wyzwanie!<br><br><strong style="color:#87ceeb;font-size:18px">🌅 Cykl dnia i nocy:</strong><br>• Co 20 kliknięć zmienia się pora dnia<br>• 7 unikalnych pór (świt → noc)<br>• Lampa zapala się automatycznie po zmroku<br><br><span style="opacity:0.7;font-size:14px">💾 Gra zapisuje się automatycznie co 5 sekund</span></div>`;
+        modalText.innerHTML = `<div style="text-align:left;line-height:1.8"><strong style="color:#00ff88;font-size:20px">🎯 Cel gry:</strong><br>Klikaj przycisk ZDK, rozwijaj firmę i siebie! Zbieraj premie i awansuj przez system Prestige.<br><br><strong style="color:#ffd700;font-size:18px">💰 System premii:</strong><br>• Co 100 kliknięć = 2.09 zł premii<br>• Możesz wypłacać zebrane środki<br>• Bonus rośnie z poziomem Prestige<br><br><strong style="color:#667eea;font-size:18px">⭐ Prestige - co to?</strong><br>Prestige to reset postępu za permanentne bonusy!<br><br>• Odblokowanie: 10,000 kliknięć<br>• Reset: kliknięcia → 0, premia → 0<br>• Zachowujesz: osiągnięcia, poziom Prestige<br>• <span style="color:#00ff88">Bonus: +10% premii NA ZAWSZE!</span><br>• Przykład: Prestige 5 = dostajesz 150% premii<br><br><strong style="color:#f093fb;font-size:18px">🏆 Osiągnięcia (17):</strong><br>• Odblokowuj za kliknięcia i premie<br>• Zobacz pełną listę w panelu<br><br><strong style="color:#ff6b6b;font-size:18px">⚡ Mechanika trudności:</strong><br>• Co 100 kliknięć przycisk staje się szybszy<br>• Im wyższy poziom, tym większe wyzwanie!<br><br><span style="opacity:0.7;font-size:14px">💾 Gra zapisuje się automatycznie co 5 sekund</span></div>`;
         modal.classList.add('show');
     });
 
@@ -1239,6 +1298,13 @@
     modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('show'); });
 
     startButton.addEventListener('click', () => {
+        // Zapisz imię gracza
+        const nameValue = playerNameInput.value.trim();
+        if (nameValue) {
+            playerName = nameValue;
+            saveGame();
+        }
+
         titleScreen.classList.add('hidden');
         setTimeout(() => titleScreen.style.display = 'none', 500);
         moveButton();
