@@ -399,41 +399,67 @@ button.addEventListener('click', () => {
     saveGame();
 });
 
+// ---
 withdrawBtn.addEventListener('click', () => {
     if (bonusAmount === 0) {
         modalTitle.textContent = '💸 Brak premii';
         modalText.textContent = 'Jeszcze za mało kliknięć! Pracuj dalej, aby uzbierać premię.';
     } else {
-        const taxes = [
-            { name: 'PIT', amount: bonusAmount * 0.32 },
-            { name: 'ZUS', amount: bonusAmount * 0.28 },
-            { name: 'NFZ', amount: bonusAmount * 0.09 },
-            { name: 'Składka zdrowotna', amount: bonusAmount * 0.12 },
-            { name: 'Podatek od premii', amount: bonusAmount * 0.19 }
+        // Absurdalne korpo-potrącenia
+        const deductionsPool = [
+            'Opłata za zbyt długie oddychanie przy biurku',
+            'Składka na Program Pozytywnego Myślenia',
+            'Podatek od zaangażowania powyżej normy',
+            'Wyrównanie motywacyjne międzydziałowe',
+            'Opłata środowiskowa za użycie klimatyzacji',
+            'Koszt implementacji nowej platformy benefitowej',
+            'Składka na rezerwę strategiczną KPI',
+            'Dopłata za nadmierne wykorzystanie przycisku „Wyślij” w Outlooku',
+            'Opłata za niewystarczający entuzjazm w czasie daily',
+            'Dopłata za uśmiech w godzinach nadliczbowych',
+            'Opłata za udział w nieobowiązkowym webinarze',
+            'Koszt wdrożenia programu Work Smarter, Not Harder',
+            'Fundusz Innowacji: pomysły, które nie przeszły przez akceptację',
+            'Składka wyrównawcza po integracji zespołowej',
+            'Abonament na monitorowanie satysfakcji pracowników'
         ];
-        const totalTax = taxes.reduce((sum, tax) => sum + tax.amount, 0);
-        const remaining = bonusAmount - totalTax;
 
-        modalTitle.textContent = '💰 Wypłata premii';
-        modalText.innerHTML = `<strong>Twoja premia: ${bonusAmount.toFixed(2)} zł</strong><br><br>Obowiązkowe odliczenia:<br>${taxes.map(tax => `• ${tax.name}: -${tax.amount.toFixed(2)} zł`).join('<br>')}<br><br><strong style="color: #ff6b6b; font-size: 24px;">Do wypłaty: ${Math.max(0, remaining).toFixed(2)} zł</strong><br><br>${remaining <= 0 ? `<span style="opacity: 0.7; font-size: 14px;">Niestety podatki pochłonęły całą premię...</span><br><br><button id="buyTaxRelief" style="margin-top:15px;padding:15px 30px;font-size:16px;background:linear-gradient(135deg,#10b981,#059669);color:white;border:3px solid #047857;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:bold;box-shadow:0 4px 15px rgba(16,185,129,0.4)">💳 Kup ulgę podatkową (3000 zł)</button>` : '<span style="color:#00ff88">Gratulacje! Udało Ci się coś zachować!</span>'}`;
-
-        const buyBtn = document.getElementById('buyTaxRelief');
-        if (buyBtn) {
-            buyBtn.addEventListener('click', () => {
-                showPaymentForm();
-            });
+        // Wybierz losowo kilka potrąceń
+        const chosen = [];
+        const poolCopy = [...deductionsPool];
+        const count = 5 + Math.floor(Math.random() * 4); // 5–8 potrąceń
+        for (let i = 0; i < count && poolCopy.length > 0; i++) {
+            const idx = Math.floor(Math.random() * poolCopy.length);
+            chosen.push(poolCopy.splice(idx, 1)[0]);
         }
 
-        if (remaining <= 0) {
-            bonusAmount = 0;
-            bonusDisplay.textContent = '0.00';
-            saveGame();
-        }
+        // Oblicz sztuczne potrącenia – zawsze do zera
+        const deductions = chosen.map((name, i) => ({
+            name,
+            amount: (bonusAmount / chosen.length) * (0.8 + Math.random() * 0.4)
+        }));
+
+        const totalDeduction = deductions.reduce((sum, d) => sum + d.amount, 0);
+        const remaining = Math.max(0, bonusAmount - totalDeduction);
+
+        modalTitle.textContent = '📉 Raport korekty premii jakościowej';
+        modalText.innerHTML = `
+            <strong>Twoja premia jakościowa: ${bonusAmount.toFixed(2)} zł</strong><br><br>
+            Wykryto następujące automatyczne potrącenia:<br><br>
+            ${deductions.map(d => `• ${d.name}: -${d.amount.toFixed(2)} zł`).join('<br>')}
+            <br><br>
+            <strong style="color:#ff6b6b; font-size:22px;">Do wypłaty: 0.00 zł</strong>
+            <br><br>
+            <span style="opacity:0.7; font-size:14px;">Dziękujemy za zaangażowanie — system już je skorygował.</span>
+        `;
+
+        bonusAmount = 0;
+        bonusDisplay.textContent = '0.00';
+        saveGame();
     }
     modal.classList.add('show');
     menuPanel.classList.remove('open');
 });
-
 function showPaymentForm() {
     modalTitle.textContent = '💳 Płatność - Ulga podatkowa';
     modalText.innerHTML = `
