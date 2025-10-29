@@ -1,0 +1,1380 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Klikam więc jestem">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ff6b6b'/%3E%3Ctext x='50' y='65' font-size='60' text-anchor='middle' fill='white' font-family='Arial'%3EZ%3C/text%3E%3C/svg%3E">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23ff6b6b' rx='40'/%3E%3Ctext x='90' y='120' font-size='100' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3EZ%3C/text%3E%3C/svg%3E">
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIktsaWthbSB3acSZYyBqZXN0ZW0iLAogICJzaG9ydF9uYW1lIjogIktsaWthbSIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMWExYTJlIiwKICAidGhlbWVfY29sb3IiOiAiIzFhMWEyZSIsCiAgImljb25zIjogW3sKICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxODAgMTgwJyUzRSUzQ3JlY3Qgd2lkdGg9JzE4MCcgaGVpZ2h0PScxODAnIGZpbGw9JyUyM2ZmNmI2Yicgcng9JzQwJy8lM0UlM0N0ZXh0IHg9JzkwJyB5PScxMjAnIGZvbnQtc2l6ZT0nMTAwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBmaWxsPSd3aGl0ZScgZm9udC1mYW1pbHk9J0FyaWFsJyBmb250LXdlaWdodD0nYm9sZCclM0VaJTNDL3RleHQlM0UlM0Mvc3ZnJTNFIiwKICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCiAgfSwgewogICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDUxMiA1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgZmlsbD0nJTIzZmY2YjZiJyByeD0nMTAwJy8lM0UlM0N0ZXh0IHg9JzI1NicgeT0nMzQwJyBmb250LXNpemU9JzMwMCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtZmFtaWx5PSdBcmlhbCcgZm9udC13ZWlnaHQ9J2JvbGQnJTNFWiUzQy90ZXh0JTNFJTNDL3N2ZyUzRSIsCiAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogIH1dCn0=">
+    <title>Klikam więc jestem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            position: relative;
+            image-rendering: pixelated;
+            image-rendering: crisp-edges;
+        }
+
+        /* Ekran tytułowy */
+        #titleScreen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 0.5s;
+        }
+
+        #titleScreen.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .title {
+            font-size: 52px;
+            color: #fff;
+            text-shadow: 4px 4px 0px rgba(0,0,0,0.3), 8px 8px 0px rgba(0,0,0,0.1);
+            margin-bottom: 60px;
+            text-align: center;
+            padding: 0 20px;
+            line-height: 1.3;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        #startButton {
+            padding: 20px 50px;
+            font-size: 28px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: #fff;
+            background: #ff6b6b;
+            border: 4px solid #c92a2a;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 0 #c92a2a, 0 10px 30px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        #startButton:hover {
+            background: #ff8787;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 0 #c92a2a, 0 12px 35px rgba(0,0,0,0.4);
+        }
+
+        #startButton:active {
+            transform: translateY(2px);
+            box-shadow: 0 3px 0 #c92a2a, 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .install-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 11px;
+            color: rgba(255,255,255,0.6);
+            text-align: center;
+            max-width: 300px;
+            line-height: 1.5;
+        }
+
+        /* Tło gry - pokój */
+        #gameBackground {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transition: background 2s ease;
+        }
+
+        .office {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .wall {
+            position: absolute;
+            bottom: 20%;
+            left: 0;
+            width: 100%;
+            height: 80%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            transition: all 2s ease;
+            z-index: 1;
+        }
+
+        .floor {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 20%;
+            background: repeating-linear-gradient(
+                    90deg,
+                    #2d3748 0px,
+                    #2d3748 50px,
+                    #374151 50px,
+                    #374151 100px
+            );
+            transition: all 2s ease;
+            z-index: 2;
+        }
+
+        /* Światło z okna - na wierzchu */
+        .window-light {
+            position: absolute;
+            top: 10%;
+            right: 8%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(ellipse at top, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.2) 30%, rgba(255,255,255,0.05) 50%, transparent 70%);
+            pointer-events: none;
+            transition: all 2s ease;
+            filter: blur(60px);
+            z-index: 5;
+            transform: rotate(-20deg);
+        }
+
+        /* Okno z widokiem */
+        .window {
+            position: absolute;
+            top: 15%;
+            right: 10%;
+            width: 280px;
+            height: 250px;
+            background: #87ceeb;
+            border: 14px solid #2d3748;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.3), 0 15px 50px rgba(0,0,0,0.5);
+            transition: background 2s ease;
+            border-radius: 6px;
+            z-index: 3;
+        }
+
+        /* Roślina */
+        .plant {
+            position: absolute;
+            bottom: 22%;
+            left: 8%;
+            width: 60px;
+            height: 100px;
+            z-index: 4;
+        }
+
+        .plant-pot {
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 35px;
+            background: #8b4513;
+            border-radius: 5px 5px 15px 15px;
+        }
+
+        .plant-leaf {
+            position: absolute;
+            width: 25px;
+            height: 40px;
+            background: #2d5016;
+            border-radius: 50% 50% 50% 0;
+            bottom: 30px;
+        }
+
+        .plant-leaf:nth-child(1) {
+            left: 5px;
+            transform: rotate(-30deg);
+        }
+
+        .plant-leaf:nth-child(2) {
+            left: 15px;
+            transform: rotate(-10deg);
+            background: #3a6b1f;
+        }
+
+        .plant-leaf:nth-child(3) {
+            right: 5px;
+            transform: rotate(30deg) scaleX(-1);
+        }
+
+        /* Kubek kawy */
+        .coffee-mug {
+            display: none;
+        }
+
+        .coffee-mug::before {
+            display: none;
+        }
+
+        .coffee-mug::after {
+            display: none;
+        }
+
+        .coffee-steam {
+            display: none;
+        }
+
+        .window-frame {
+            position: absolute;
+            width: 100%;
+            height: 5px;
+            background: #1a202c;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+
+        .window-frame-v {
+            position: absolute;
+            width: 5px;
+            height: 100%;
+            background: #1a202c;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        /* Słońce/Księżyc w oknie - WEWNĄTRZ okna */
+        .celestial {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            top: 30%;
+            right: 20%;
+            transition: all 2s ease;
+            z-index: 1;
+        }
+
+        /* UI */
+        #uiContainer {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            pointer-events: none;
+        }
+
+        .ui-box {
+            background: rgba(0,0,0,0.8);
+            padding: 15px 25px;
+            border-radius: 12px;
+            border: 3px solid #00ff88;
+            box-shadow: 0 4px 20px rgba(0,255,136,0.3);
+            color: white;
+            font-size: 20px;
+            pointer-events: auto;
+        }
+
+        .ui-box.bonus {
+            border-color: #ffd700;
+            box-shadow: 0 4px 20px rgba(255,215,0,0.3);
+        }
+
+        .ui-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 5px;
+        }
+
+        .ui-value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #00ff88;
+        }
+
+        .ui-value.bonus {
+            color: #ffd700;
+        }
+
+        /* Przyciski akcji */
+        #actionButtons {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0 20px;
+        }
+
+        .action-btn {
+            padding: 15px 30px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: 3px solid #4a5fbb;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102,126,234,0.6);
+        }
+
+        .action-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(102,126,234,0.4);
+        }
+
+        .action-btn.withdraw {
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            border-color: #d4af37;
+            color: #333;
+            box-shadow: 0 4px 15px rgba(255,215,0,0.4);
+        }
+
+        .action-btn.withdraw:hover {
+            box-shadow: 0 6px 20px rgba(255,215,0,0.6);
+        }
+
+        .action-btn.achievements {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            border-color: #c73866;
+            box-shadow: 0 4px 15px rgba(240,147,251,0.4);
+        }
+
+        .action-btn.achievements:hover {
+            box-shadow: 0 6px 20px rgba(240,147,251,0.6);
+        }
+
+        .action-btn.prestige {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-color: #4a5fbb;
+            box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+        }
+
+        .action-btn.prestige:hover {
+            box-shadow: 0 6px 20px rgba(102,126,234,0.6);
+        }
+
+        .action-btn.prestige:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Panel osiągnięć */
+        #achievementsPanel {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 320px;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 500;
+            transition: right 0.3s;
+            overflow-y: auto;
+            padding: 20px;
+            border-left: 4px solid #f093fb;
+        }
+
+        #achievementsPanel.open {
+            right: 0;
+        }
+
+        .achievements-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f093fb;
+        }
+
+        .achievements-title {
+            font-size: 24px;
+            color: #f093fb;
+            font-weight: bold;
+        }
+
+        .close-achievements {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            line-height: 1;
+        }
+
+        .achievement-item {
+            background: rgba(255,255,255,0.05);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(240,147,251,0.3);
+            transition: all 0.2s;
+        }
+
+        .achievement-item.unlocked {
+            border-color: #f093fb;
+            background: rgba(240,147,251,0.1);
+            animation: unlock 0.5s;
+        }
+
+        @keyframes unlock {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .achievement-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            filter: grayscale(100%);
+        }
+
+        .achievement-item.unlocked .achievement-icon {
+            filter: grayscale(0%);
+        }
+
+        .achievement-name {
+            font-size: 16px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .achievement-desc {
+            font-size: 13px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 5px;
+        }
+
+        .achievement-progress {
+            font-size: 12px;
+            color: #f093fb;
+            opacity: 0.8;
+        }
+
+        /* Lampka */
+        .lamp {
+            position: absolute;
+            top: 8%;
+            left: 15%;
+            width: 80px;
+            height: 120px;
+            z-index: 4;
+        }
+
+        .lamp-cord {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: #333;
+        }
+
+        .lamp-shade {
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(to bottom, #ffd700 0%, #ffed4e 100%);
+            border-radius: 0 0 20px 20px;
+            border: 3px solid #d4af37;
+            box-shadow: 0 10px 30px rgba(255,215,0,0.4);
+        }
+
+        .lamp-light {
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 100px;
+            background: radial-gradient(ellipse at top, rgba(255,235,59,0.3) 0%, transparent 70%);
+            pointer-events: none;
+            filter: blur(15px);
+        }
+
+        /* Fotel */
+        .armchair {
+            position: absolute;
+            bottom: 22%;
+            right: 25%;
+            width: 80px;
+            height: 90px;
+            z-index: 4;
+        }
+
+        .armchair-back {
+            position: absolute;
+            bottom: 30px;
+            left: 10px;
+            width: 60px;
+            height: 50px;
+            background: #8b4789;
+            border-radius: 15px 15px 0 0;
+            border: 3px solid #6a356a;
+        }
+
+        .armchair-seat {
+            position: absolute;
+            bottom: 15px;
+            left: 5px;
+            width: 70px;
+            height: 25px;
+            background: #8b4789;
+            border-radius: 10px;
+            border: 3px solid #6a356a;
+        }
+
+        .armchair-arm {
+            position: absolute;
+            bottom: 20px;
+            width: 15px;
+            height: 35px;
+            background: #8b4789;
+            border-radius: 8px;
+            border: 3px solid #6a356a;
+        }
+
+        .armchair-arm:first-of-type {
+            left: 0;
+        }
+
+        .armchair-arm:last-of-type {
+            right: 0;
+        }
+
+        /* Notyfikacja osiągnięcia */
+        #achievementNotification {
+            position: fixed;
+            top: 100px;
+            right: -400px;
+            width: 300px;
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 20px;
+            border-radius: 15px;
+            z-index: 1000;
+            transition: right 0.5s;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            border: 3px solid #fff;
+        }
+
+        #achievementNotification.show {
+            right: 20px;
+        }
+
+        .achievement-notif-title {
+            font-size: 14px;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .achievement-notif-name {
+            font-size: 20px;
+            color: white;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .achievement-notif-icon {
+            font-size: 48px;
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* Modal */
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        #modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            padding: 40px;
+            border-radius: 20px;
+            border: 4px solid #ff6b6b;
+            max-width: 90%;
+            text-align: center;
+            animation: slideUp 0.3s;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-title {
+            font-size: 28px;
+            color: #ff6b6b;
+            margin-bottom: 20px;
+        }
+
+        .modal-text {
+            font-size: 18px;
+            color: #fff;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .modal-btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            font-family: 'Courier New', monospace;
+            background: #ff6b6b;
+            color: white;
+            border: 3px solid #c92a2a;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn:hover {
+            background: #ff8787;
+            transform: scale(1.05);
+        }
+
+        /* Przycisk ZDK */
+        #zdkButton {
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 25px 50px;
+            font-size: 32px;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ff5252 100%);
+            border: 5px solid #c92a2a;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 50;
+            box-shadow: 0 8px 0 #c92a2a, 0 12px 40px rgba(255,107,107,0.6);
+        }
+
+        #zdkButton:hover {
+            background: linear-gradient(135deg, #ff8787 0%, #ff6b6b 100%);
+            transform: translate(-50%, -50%) scale(1.05);
+        }
+
+        #zdkButton:active {
+            transform: translate(-50%, -48%) scale(0.95);
+            box-shadow: 0 4px 0 #c92a2a, 0 6px 20px rgba(255,107,107,0.5);
+        }
+
+        @media (max-width: 768px) {
+            .title { font-size: 36px; }
+            .ui-box { font-size: 16px; padding: 12px 20px; }
+            .ui-value { font-size: 22px; }
+            .window { width: 180px; height: 160px; right: 5%; top: 12%; }
+            .celestial { width: 35px; height: 35px; }
+            .action-btn { font-size: 14px; padding: 10px 20px; }
+            #zdkButton { font-size: 26px; padding: 20px 40px; }
+            .window-light { width: 350px; height: 350px; }
+            .plant { left: 5%; bottom: 20%; transform: scale(0.7); }
+            .lamp { left: 10%; top: 10%; transform: scale(0.7); }
+            .armchair { right: 15%; bottom: 20%; transform: scale(0.7); }
+            #achievementsPanel { width: 100%; right: -100%; }
+            .install-hint { font-size: 10px; max-width: 250px; }
+            #uiContainer { top: 10px; left: 10px; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+<!-- Ekran tytułowy -->
+<div id="titleScreen">
+    <div class="title">KLIKAM<br>WIĘC<br>JESTEM</div>
+    <button id="startButton">KLIK</button>
+    <div class="install-hint">
+        💡 Dodaj do ekranu głównego telefonu:<br>
+        Menu → "Dodaj do ekranu głównego"
+    </div>
+</div>
+
+<!-- Tło gry -->
+<div id="gameBackground">
+    <div class="office">
+        <div class="wall"></div>
+        <div class="floor"></div>
+
+        <!-- Okno z widokiem -->
+        <div class="window" id="window">
+            <div class="celestial" id="celestial"></div>
+            <div class="window-frame"></div>
+            <div class="window-frame-v"></div>
+        </div>
+
+        <!-- Światło z okna -->
+        <div class="window-light" id="windowLight"></div>
+
+        <!-- Lampka -->
+        <div class="lamp">
+            <div class="lamp-cord"></div>
+            <div class="lamp-shade"></div>
+            <div class="lamp-light"></div>
+        </div>
+
+        <!-- Roślina -->
+        <div class="plant">
+            <div class="plant-leaf"></div>
+            <div class="plant-leaf"></div>
+            <div class="plant-leaf"></div>
+            <div class="plant-pot"></div>
+        </div>
+
+        <!-- Fotel -->
+        <div class="armchair">
+            <div class="armchair-arm"></div>
+            <div class="armchair-back"></div>
+            <div class="armchair-seat"></div>
+            <div class="armchair-arm"></div>
+        </div>
+    </div>
+</div>
+
+<!-- UI -->
+<div id="uiContainer">
+    <div class="ui-box">
+        <div class="ui-label">Kliknięcia</div>
+        <div class="ui-value"><span id="clickCount">0</span></div>
+    </div>
+    <div class="ui-box bonus">
+        <div class="ui-label">Premia</div>
+        <div class="ui-value bonus"><span id="bonusAmount">0.00</span> zł</div>
+    </div>
+    <div class="ui-box" style="border-color: #667eea; box-shadow: 0 4px 20px rgba(102,126,234,0.3);">
+        <div class="ui-label">Prestige</div>
+        <div class="ui-value" style="color: #667eea;"><span id="prestigeLevel">0</span></div>
+    </div>
+</div>
+
+<!-- Przyciski akcji -->
+<div id="actionButtons">
+    <button class="action-btn withdraw" id="withdrawBtn">💰 Wypłać premię</button>
+    <button class="action-btn" id="shareBtn">📤 Udostępnij</button>
+    <button class="action-btn achievements" id="achievementsBtn">🏆 Osiągnięcia</button>
+    <button class="action-btn prestige" id="prestigeBtn" disabled>⭐ Prestige (10000)</button>
+</div>
+
+<!-- Przycisk ZDK -->
+<button id="zdkButton">ZDK</button>
+
+<!-- Modal -->
+<div id="modal">
+    <div class="modal-content">
+        <div class="modal-title" id="modalTitle">Wypłata premii</div>
+        <div class="modal-text" id="modalText"></div>
+        <button class="modal-btn" id="modalClose">Rozumiem 😢</button>
+    </div>
+</div>
+
+<!-- Panel osiągnięć -->
+<div id="achievementsPanel">
+    <div class="achievements-header">
+        <div class="achievements-title">🏆 Osiągnięcia</div>
+        <button class="close-achievements" id="closeAchievements">×</button>
+    </div>
+    <div id="achievementsList"></div>
+</div>
+
+<!-- Notyfikacja osiągnięcia -->
+<div id="achievementNotification">
+    <div class="achievement-notif-title">🎉 Osiągnięcie Odblokowane!</div>
+    <div class="achievement-notif-name" id="notifAchievementName"></div>
+    <div class="achievement-notif-icon" id="notifAchievementIcon"></div>
+</div>
+
+<script>
+    let clickCount = 0;
+    let bonusAmount = 0;
+    let prestigeLevel = 0;
+    const button = document.getElementById('zdkButton');
+    const countDisplay = document.getElementById('clickCount');
+    const bonusDisplay = document.getElementById('bonusAmount');
+    const prestigeDisplay = document.getElementById('prestigeLevel');
+    const titleScreen = document.getElementById('titleScreen');
+    const startButton = document.getElementById('startButton');
+    const windowEl = document.getElementById('window');
+    const celestial = document.getElementById('celestial');
+    const windowLight = document.getElementById('windowLight');
+    const withdrawBtn = document.getElementById('withdrawBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const achievementsBtn = document.getElementById('achievementsBtn');
+    const prestigeBtn = document.getElementById('prestigeBtn');
+    const achievementsPanel = document.getElementById('achievementsPanel');
+    const closeAchievements = document.getElementById('closeAchievements');
+    const achievementsList = document.getElementById('achievementsList');
+    const achievementNotification = document.getElementById('achievementNotification');
+    const notifAchievementName = document.getElementById('notifAchievementName');
+    const notifAchievementIcon = document.getElementById('notifAchievementIcon');
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalText = document.getElementById('modalText');
+    const modalClose = document.getElementById('modalClose');
+
+    // Achievements
+    const achievements = [
+        { id: 'first', name: 'Pierwszy krok', desc: 'Kliknij pierwszy raz', icon: '👶', threshold: 1 },
+        { id: 'novice', name: 'Nowicjusz', desc: 'Kliknij 50 razy', icon: '🔰', threshold: 50 },
+        { id: 'worker', name: 'Pracowity', desc: 'Kliknij 100 razy', icon: '💼', threshold: 100 },
+        { id: 'dedicated', name: 'Oddany', desc: 'Kliknij 250 razy', icon: '🎯', threshold: 250 },
+        { id: 'expert', name: 'Ekspert', desc: 'Kliknij 500 razy', icon: '⭐', threshold: 500 },
+        { id: 'slave', name: 'Klikalny niewolnik', desc: 'Kliknij 1000 razy', icon: '⛓️', threshold: 1000 },
+        { id: 'addict', name: 'Uzależniony', desc: 'Kliknij 2500 razy', icon: '🔥', threshold: 2500 },
+        { id: 'legend', name: 'Legenda', desc: 'Kliknij 5000 razy', icon: '👑', threshold: 5000 },
+        { id: 'god', name: 'Bóg Klikania', desc: 'Kliknij 10000 razy', icon: '🌟', threshold: 10000 },
+        { id: 'bonus1', name: 'Pierwsza premia', desc: 'Zdobądź pierwszą premię', icon: '💰', threshold: 100 },
+        { id: 'bonus5', name: 'Giełdowy gracz', desc: 'Zdobądź 10 zł premii', icon: '💵', bonusThreshold: 10 },
+        { id: 'bonus10', name: 'Kapitał', desc: 'Zdobądź 50 zł premii', icon: '💸', bonusThreshold: 50 },
+        { id: 'bonus20', name: 'Bogacz', desc: 'Zdobądź 100 zł premii', icon: '💎', bonusThreshold: 100 },
+        { id: 'timetravel', name: 'Podróżnik w czasie', desc: 'Zobacz wszystkie pory dnia', icon: '⏰', timesThreshold: 7 },
+        { id: 'speedster', name: 'Mistrz klikania', desc: 'Osiągnij poziom 10 szybkości', icon: '⚡', speedThreshold: 10 },
+        { id: 'prestige1', name: 'Reinkarnacja', desc: 'Wykonaj pierwszy Prestige', icon: '🔄', prestigeThreshold: 1 },
+        { id: 'prestige5', name: 'Oświecony', desc: 'Wykonaj 5 Prestige', icon: '✨', prestigeThreshold: 5 }
+    ];
+
+    let unlockedAchievements = new Set();
+    let seenTimes = new Set();
+    let buttonSpeed = 1; // Poziom szybkości (1 = najwolniej)
+
+    // Mnożnik z prestige
+    function getPrestigeMultiplier() {
+        return 1 + (prestigeLevel * 0.1); // +10% za każdy prestige
+    }
+
+    // Dźwięki (Web Audio API)
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    function playClickSound() {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.1);
+    }
+
+    function playAchievementSound() {
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        oscillator.type = 'triangle';
+        gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+
+        oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime);
+        oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1);
+        oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2);
+
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+    }
+
+    // Pory dnia
+    const timesOfDay = [
+        {
+            sky: '#ffa07a',
+            celestialColor: '#ffd700',
+            celestialTop: '70%',
+            wall: 'linear-gradient(135deg, #ff9a9e 0%, #fecfef 50%, #feada6 100%)',
+            floor: 'repeating-linear-gradient(90deg, #3d2f2f 0px, #3d2f2f 50px, #4a3535 50px, #4a3535 100px)',
+            lightColor: 'rgba(255,160,122,0.5)',
+            lightIntensity: '0%, rgba(255,160,122,0.3) 25%, rgba(255,160,122,0.1) 45%'
+        },
+        {
+            sky: '#87ceeb',
+            celestialColor: '#ffeb3b',
+            celestialTop: '45%',
+            wall: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+            floor: 'repeating-linear-gradient(90deg, #2d3748 0px, #2d3748 50px, #374151 50px, #374151 100px)',
+            lightColor: 'rgba(255,235,59,0.6)',
+            lightIntensity: '0%, rgba(255,235,59,0.4) 25%, rgba(255,235,59,0.15) 45%'
+        },
+        {
+            sky: '#5dade2',
+            celestialColor: '#ffeb3b',
+            celestialTop: '15%',
+            wall: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+            floor: 'repeating-linear-gradient(90deg, #2d3748 0px, #2d3748 50px, #374151 50px, #374151 100px)',
+            lightColor: 'rgba(255,255,255,0.7)',
+            lightIntensity: '0%, rgba(255,255,255,0.5) 25%, rgba(255,255,255,0.2) 45%'
+        },
+        {
+            sky: '#f39c12',
+            celestialColor: '#ffa500',
+            celestialTop: '40%',
+            wall: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+            floor: 'repeating-linear-gradient(90deg, #3d3020 0px, #3d3020 50px, #4a3828 50px, #4a3828 100px)',
+            lightColor: 'rgba(255,165,0,0.6)',
+            lightIntensity: '0%, rgba(255,165,0,0.4) 25%, rgba(255,165,0,0.15) 45%'
+        },
+        {
+            sky: '#e67e22',
+            celestialColor: '#ff6347',
+            celestialTop: '65%',
+            wall: 'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 50%, #ffecd2 100%)',
+            floor: 'repeating-linear-gradient(90deg, #3d2820 0px, #3d2820 50px, #4a3028 50px, #4a3028 100px)',
+            lightColor: 'rgba(230,126,34,0.5)',
+            lightIntensity: '0%, rgba(230,126,34,0.3) 25%, rgba(230,126,34,0.1) 45%'
+        },
+        {
+            sky: '#34495e',
+            celestialColor: '#bdc3c7',
+            celestialTop: '30%',
+            wall: 'linear-gradient(135deg, #4e54c8 0%, #8f94fb 100%)',
+            floor: 'repeating-linear-gradient(90deg, #1a1f2e 0px, #1a1f2e 50px, #22283a 50px, #22283a 100px)',
+            lightColor: 'rgba(189,195,199,0.3)',
+            lightIntensity: '0%, rgba(189,195,199,0.2) 25%, rgba(189,195,199,0.08) 45%'
+        },
+        {
+            sky: '#1a1a2e',
+            celestialColor: '#f0e68c',
+            celestialTop: '20%',
+            wall: 'linear-gradient(135deg, #2c3e50 0%, #3498db 50%, #2c3e50 100%)',
+            floor: 'repeating-linear-gradient(90deg, #0f1419 0px, #0f1419 50px, #151a20 50px, #151a20 100px)',
+            lightColor: 'rgba(240,230,140,0.2)',
+            lightIntensity: '0%, rgba(240,230,140,0.12) 25%, rgba(240,230,140,0.05) 45%'
+        }
+    ];
+
+    let currentTimeIndex = 0;
+
+    // Wczytaj zapisany stan
+    function loadGame() {
+        const saved = localStorage.getItem('zdkGameState');
+        if (saved) {
+            const state = JSON.parse(saved);
+            clickCount = state.clicks || 0;
+            bonusAmount = state.bonus || 0;
+            prestigeLevel = state.prestige || 0;
+            currentTimeIndex = state.timeIndex || 0;
+            buttonSpeed = state.speed || 1;
+            unlockedAchievements = new Set(state.achievements || []);
+            seenTimes = new Set(state.seenTimes || []);
+            countDisplay.textContent = clickCount;
+            bonusDisplay.textContent = bonusAmount.toFixed(2);
+            prestigeDisplay.textContent = prestigeLevel;
+            updateTimeOfDay();
+            updateAchievementsList();
+            updatePrestigeButton();
+        }
+    }
+
+    // Zapisz stan
+    function saveGame() {
+        const state = {
+            clicks: clickCount,
+            bonus: bonusAmount,
+            prestige: prestigeLevel,
+            timeIndex: currentTimeIndex,
+            speed: buttonSpeed,
+            achievements: Array.from(unlockedAchievements),
+            seenTimes: Array.from(seenTimes)
+        };
+        localStorage.setItem('zdkGameState', JSON.stringify(state));
+    }
+
+    // Aktualizuj przycisk Prestige
+    function updatePrestigeButton() {
+        const canPrestige = clickCount >= 10000;
+        prestigeBtn.disabled = !canPrestige;
+        if (canPrestige) {
+            prestigeBtn.textContent = `⭐ Prestige (+${(getPrestigeMultiplier() * 0.1 * 100 + 10).toFixed(0)}% bonusu)`;
+        } else {
+            prestigeBtn.textContent = `⭐ Prestige (${clickCount}/10000)`;
+        }
+    }
+
+    // Sprawdź osiągnięcia
+    function checkAchievements() {
+        achievements.forEach(ach => {
+            if (unlockedAchievements.has(ach.id)) return;
+
+            let unlocked = false;
+
+            if (ach.threshold && clickCount >= ach.threshold) {
+                unlocked = true;
+            } else if (ach.bonusThreshold && bonusAmount >= ach.bonusThreshold) {
+                unlocked = true;
+            } else if (ach.timesThreshold && seenTimes.size >= ach.timesThreshold) {
+                unlocked = true;
+            } else if (ach.speedThreshold && buttonSpeed >= ach.speedThreshold) {
+                unlocked = true;
+            } else if (ach.prestigeThreshold && prestigeLevel >= ach.prestigeThreshold) {
+                unlocked = true;
+            }
+
+            if (unlocked) {
+                unlockAchievement(ach);
+            }
+        });
+    }
+
+    // Odblokuj osiągnięcie
+    function unlockAchievement(achievement) {
+        unlockedAchievements.add(achievement.id);
+        playAchievementSound();
+        showAchievementNotification(achievement);
+        updateAchievementsList();
+        saveGame();
+    }
+
+    // Pokaż notyfikację
+    function showAchievementNotification(achievement) {
+        notifAchievementName.textContent = achievement.name;
+        notifAchievementIcon.textContent = achievement.icon;
+        achievementNotification.classList.add('show');
+
+        setTimeout(() => {
+            achievementNotification.classList.remove('show');
+        }, 3000);
+    }
+
+    // Aktualizuj listę osiągnięć
+    function updateAchievementsList() {
+        achievementsList.innerHTML = '';
+
+        achievements.forEach(ach => {
+            const unlocked = unlockedAchievements.has(ach.id);
+            const item = document.createElement('div');
+            item.className = 'achievement-item' + (unlocked ? ' unlocked' : '');
+
+            let progress = '';
+            if (ach.threshold) {
+                progress = `${Math.min(clickCount, ach.threshold)}/${ach.threshold}`;
+            } else if (ach.bonusThreshold) {
+                progress = `${Math.min(bonusAmount, ach.bonusThreshold).toFixed(2)}/${ach.bonusThreshold} zł`;
+            } else if (ach.timesThreshold) {
+                progress = `${seenTimes.size}/${ach.timesThreshold}`;
+            } else if (ach.speedThreshold) {
+                progress = `Poziom ${buttonSpeed}/${ach.speedThreshold}`;
+            } else if (ach.prestigeThreshold) {
+                progress = `${prestigeLevel}/${ach.prestigeThreshold}`;
+            }
+
+            item.innerHTML = `
+                    <div class="achievement-icon">${ach.icon}</div>
+                    <div class="achievement-name">${ach.name}</div>
+                    <div class="achievement-desc">${ach.desc}</div>
+                    <div class="achievement-progress">${unlocked ? '✓ Odblokowane' : progress}</div>
+                `;
+
+            achievementsList.appendChild(item);
+        });
+    }
+
+    function updateTimeOfDay() {
+        const time = timesOfDay[currentTimeIndex];
+        windowEl.style.background = time.sky;
+        celestial.style.background = time.celestialColor;
+        celestial.style.top = time.celestialTop;
+        celestial.style.boxShadow = `0 0 30px ${time.celestialColor}`;
+        document.querySelector('.wall').style.background = time.wall;
+        document.querySelector('.floor').style.background = time.floor;
+        windowLight.style.background = `radial-gradient(ellipse at top, ${time.lightColor} ${time.lightIntensity}, transparent 70%)`;
+
+        // Dodaj do widzianych pór dnia
+        seenTimes.add(currentTimeIndex);
+        checkAchievements();
+    }
+
+    function moveButton() {
+        const uiContainer = document.getElementById('uiContainer');
+        const uiRect = uiContainer.getBoundingClientRect();
+        const actionsContainer = document.getElementById('actionButtons');
+        const actionsRect = actionsContainer.getBoundingClientRect();
+
+        const buttonWidth = button.offsetWidth;
+        const buttonHeight = button.offsetHeight;
+
+        const margin = 20;
+        let x, y;
+        let attempts = 0;
+        const maxAttempts = 50;
+
+        // Próbuj znaleźć pozycję która nie koliduje z UI
+        do {
+            x = Math.random() * (window.innerWidth - buttonWidth - margin * 2) + margin;
+            y = Math.random() * (window.innerHeight - buttonHeight - margin * 2) + margin;
+            attempts++;
+
+            // Sprawdź kolizję z UI w lewym górnym rogu
+            const collidesWithUI = (
+                x < uiRect.right + margin &&
+                x + buttonWidth > uiRect.left - margin &&
+                y < uiRect.bottom + margin &&
+                y + buttonHeight > uiRect.top - margin
+            );
+
+            // Sprawdź kolizję z przyciskami akcji na dole
+            const collidesWithActions = (
+                x < actionsRect.right + margin &&
+                x + buttonWidth > actionsRect.left - margin &&
+                y < actionsRect.bottom + margin &&
+                y + buttonHeight > actionsRect.top - margin
+            );
+
+            if (!collidesWithUI && !collidesWithActions) {
+                break;
+            }
+        } while (attempts < maxAttempts);
+
+        // Oblicz czas tranzycji na podstawie poziomu szybkości
+        // Im wyższy poziom, tym szybciej się porusza
+        const transitionTime = Math.max(0.1, 0.5 - (buttonSpeed - 1) * 0.04);
+        button.style.transition = `all ${transitionTime}s ease`;
+
+        button.style.left = x + 'px';
+        button.style.top = y + 'px';
+        button.style.transform = '';
+    }
+
+    button.addEventListener('click', () => {
+        clickCount++;
+        countDisplay.textContent = clickCount;
+        moveButton();
+
+        // Co 100 kliknięć dodaj 2.09 zł premii
+        if (clickCount % 100 === 0) {
+            bonusAmount += 2.09;
+            bonusDisplay.textContent = bonusAmount.toFixed(2);
+
+            // Mini animacja
+            const bonusBox = document.querySelector('.ui-box.bonus');
+            bonusBox.style.transform = 'scale(1.1)';
+            setTimeout(() => {
+                bonusBox.style.transform = 'scale(1)';
+            }, 200);
+        }
+
+        // Co 20 kliknięć zmiana pory dnia
+        if (clickCount % 20 === 0) {
+            currentTimeIndex = (currentTimeIndex + 1) % timesOfDay.length;
+            updateTimeOfDay();
+        }
+
+        saveGame();
+    });
+
+    // Wypłata premii
+    withdrawBtn.addEventListener('click', () => {
+        if (bonusAmount === 0) {
+            modalTitle.textContent = '💸 Brak premii';
+            modalText.textContent = 'Jeszcze za mało kliknięć! Pracuj dalej, aby uzbierać premię.';
+        } else {
+            const taxes = [
+                { name: 'PIT', rate: 0.32, amount: bonusAmount * 0.32 },
+                { name: 'ZUS', rate: 0.28, amount: bonusAmount * 0.28 },
+                { name: 'NFZ', rate: 0.09, amount: bonusAmount * 0.09 },
+                { name: 'Składka zdrowotna', rate: 0.12, amount: bonusAmount * 0.12 },
+                { name: 'Podatek od premii', rate: 0.19, amount: bonusAmount * 0.19 }
+            ];
+
+            const totalTax = taxes.reduce((sum, tax) => sum + tax.amount, 0);
+            const remaining = bonusAmount - totalTax;
+
+            modalTitle.textContent = '💰 Wypłata premii';
+            modalText.innerHTML = `
+                    <strong>Twoja premia: ${bonusAmount.toFixed(2)} zł</strong><br><br>
+                    Odliczenia:<br>
+                    ${taxes.map(tax => `• ${tax.name}: -${tax.amount.toFixed(2)} zł`).join('<br>')}
+                    <br><br>
+                    <strong style="color: #ff6b6b; font-size: 24px;">Do wypłaty: ${Math.max(0, remaining).toFixed(2)} zł</strong>
+                    <br><br>
+                    <span style="opacity: 0.7; font-size: 14px;">
+                        ${remaining <= 0 ? 'Niestety podatki pochłonęły całą premię. Witaj w rzeczywistości! 🇵🇱' : 'Gratulacje! Udało Ci się coś zachować!'}
+                    </span>
+                `;
+        }
+        modal.classList.add('show');
+    });
+
+    // Udostępnij wynik
+    shareBtn.addEventListener('click', () => {
+        const unlockedCount = unlockedAchievements.size;
+        const text = `🎮 Klikam więc jestem\n\n💼 Kliknięcia: ${clickCount}\n💰 Premia: ${bonusAmount.toFixed(2)} zł\n⭐ Prestige: ${prestigeLevel}\n🏆 Osiągnięcia: ${unlockedCount}/${achievements.length}\n\nSpróbuj sam!`;
+
+        if (navigator.share) {
+            navigator.share({
+                title: 'Klikam więc jestem',
+                text: text
+            }).catch(() => {});
+        } else {
+            // Fallback - kopiuj do schowka
+            navigator.clipboard.writeText(text).then(() => {
+                modalTitle.textContent = '📋 Skopiowano!';
+                modalText.textContent = 'Wynik został skopiowany do schowka. Możesz go teraz wkleić gdzie chcesz!';
+                modal.classList.add('show');
+            }).catch(() => {
+                modalTitle.textContent = '📤 Twój wynik';
+                modalText.innerHTML = `<textarea readonly style="width: 100%; padding: 10px; margin: 10px 0; background: #2d3748; color: white; border: 2px solid #667eea; border-radius: 8px; font-family: inherit;">${text}</textarea>`;
+                modal.classList.add('show');
+            });
+        }
+    });
+
+    // Prestige
+    prestigeBtn.addEventListener('click', () => {
+        if (clickCount >= 10000) {
+            modalTitle.textContent = '⭐ Prestige';
+            modalText.innerHTML = `
+                    <strong>Czy na pewno chcesz wykonać Prestige?</strong><br><br>
+                    Reset:<br>
+                    • Kliknięcia: 0<br>
+                    • Premia: 0 zł<br>
+                    • Szybkość: 1<br><br>
+                    Zachowasz:<br>
+                    • Osiągnięcia<br>
+                    • Poziom Prestige +1<br><br>
+                    <strong style="color: #00ff88;">Bonus: +10% premii na zawsze!</strong><br><br>
+                    <button id="confirmPrestige" style="margin: 10px; padding: 15px 30px; font-size: 18px; background: #667eea; color: white; border: 3px solid #4a5fbb; border-radius: 10px; cursor: pointer; font-family: 'Courier New', monospace; font-weight: bold;">✓ Tak, wykonaj Prestige!</button>
+                    <button id="cancelPrestige" style="margin: 10px; padding: 15px 30px; font-size: 18px; background: #ff6b6b; color: white; border: 3px solid #c92a2a; border-radius: 10px; cursor: pointer; font-family: 'Courier New', monospace; font-weight: bold;">✗ Anuluj</button>
+                `;
+            modal.classList.add('show');
+
+            document.getElementById('confirmPrestige').addEventListener('click', () => {
+                prestigeLevel++;
+                prestigeDisplay.textContent = prestigeLevel;
+                clickCount = 0;
+                bonusAmount = 0;
+                buttonSpeed = 1;
+                countDisplay.textContent = 0;
+                bonusDisplay.textContent = '0.00';
+                currentTimeIndex = 0;
+                updateTimeOfDay();
+                checkAchievements();
+                updatePrestigeButton();
+                saveGame();
+                modal.classList.remove('show');
+
+                playAchievementSound();
+                showAchievementNotification({
+                    name: `Prestige ${prestigeLevel}!`,
+                    icon: '⭐'
+                });
+            });
+
+            document.getElementById('cancelPrestige').addEventListener('click', () => {
+                modal.classList.remove('show');
+            });
+        }
+    });
+
+    // Osiągnięcia
+    achievementsBtn.addEventListener('click', () => {
+        achievementsPanel.classList.add('open');
+    });
+
+    closeAchievements.addEventListener('click', () => {
+        achievementsPanel.classList.remove('open');
+    });
+
+    // Zamknij modal
+    modalClose.addEventListener('click', () => {
+        modal.classList.remove('show');
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.remove('show');
+        }
+    });
+
+    // Start gry
+    startButton.addEventListener('click', () => {
+        titleScreen.classList.add('hidden');
+        setTimeout(() => {
+            titleScreen.style.display = 'none';
+        }, 500);
+        moveButton();
+        updateTimeOfDay();
+    });
+
+    // Responsive
+    window.addEventListener('resize', () => {
+        if (!titleScreen.classList.contains('hidden')) return;
+        moveButton();
+    });
+
+    // Inicjalizacja
+    loadGame();
+    updateTimeOfDay();
+    updateAchievementsList();
+
+    // Auto-save co 5 sekund
+    setInterval(saveGame, 5000);
+</script>
+</body>
+</html>
