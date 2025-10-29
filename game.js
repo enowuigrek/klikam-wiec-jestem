@@ -31,6 +31,7 @@ const achievementsBtn = document.getElementById('achievementsBtn');
 const prestigeBtn = document.getElementById('prestigeBtn');
 const helpBtn = document.getElementById('helpBtn');
 const statsBtn = document.getElementById('statsBtn');
+const paskiBtn = document.getElementById('paskiBtn');
 const mailboxBtn = document.getElementById('mailboxBtn');
 const achievementsPanel = document.getElementById('achievementsPanel');
 const closeAchievements = document.getElementById('closeAchievements');
@@ -426,22 +427,105 @@ function showPaymentForm() {
 
 shareBtn.addEventListener('click', () => {
     menuPanel.classList.remove('open');
-    const playerInfo = playerName ? `👤 Gracz: ${playerName}\n` : '';
-    const text = `🎮 Klikam więc jestem\n\n${playerInfo}💼 Kliknięcia: ${clickCount}\n💰 Premia: ${bonusAmount.toFixed(2)} zł\n⭐ Prestige: ${prestigeLevel}\n🏆 Osiągnięcia: ${unlockedAchievements.size}/${achievements.length}\n\nSpróbuj sam!`;
-    if (navigator.share) {
-        navigator.share({ title: 'Klikam więc jestem', text: text }).catch(() => {});
-    } else {
-        navigator.clipboard.writeText(text).then(() => {
-            modalTitle.textContent = '📋 Skopiowano!';
-            modalText.textContent = 'Wynik został skopiowany do schowka!';
-            modal.classList.add('show');
-        }).catch(() => {
-            modalTitle.textContent = '📤 Twój wynik';
-            modalText.innerHTML = `<textarea readonly style="width:100%;padding:10px;margin:10px 0;background:#2d3748;color:white;border:2px solid #667eea;border-radius:8px;font-family:inherit">${text}</textarea>`;
-            modal.classList.add('show');
-        });
-    }
+    generateShareImage();
 });
+
+function generateShareImage() {
+    // Create canvas
+    const canvas = document.createElement('canvas');
+    canvas.width = 600;
+    canvas.height = 800;
+    const ctx = canvas.getContext('2d');
+
+    // Wall gradient (80% height)
+    const wallGradient = ctx.createLinearGradient(0, 0, 600, 640);
+    wallGradient.addColorStop(0, '#667eea');
+    wallGradient.addColorStop(0.5, '#764ba2');
+    wallGradient.addColorStop(1, '#f093fb');
+    ctx.fillStyle = wallGradient;
+    ctx.fillRect(0, 0, 600, 640);
+
+    // Floor (20% height)
+    ctx.fillStyle = '#2d3748';
+    ctx.fillRect(0, 640, 600, 160);
+
+    // Title on wall
+    ctx.fillStyle = 'white';
+    ctx.font = 'bold 48px "Courier New"';
+    ctx.textAlign = 'center';
+    ctx.shadowColor = 'rgba(0,0,0,0.5)';
+    ctx.shadowBlur = 10;
+    ctx.fillText('KLIKAM WIĘC JESTEM', 300, 100);
+    ctx.shadowBlur = 0;
+
+    // Player name box on wall
+    if (playerName) {
+        ctx.fillStyle = 'rgba(0,0,0,0.3)';
+        ctx.fillRect(150, 140, 300, 60);
+        ctx.fillStyle = '#00ff88';
+        ctx.font = 'bold 32px "Courier New"';
+        ctx.fillText(playerName, 300, 180);
+    }
+
+    // Stats on floor (3 boxes side by side)
+    const floorStats = [
+        { label: '💼', value: clickCount, x: 100, color: '#00ff88' },
+        { label: '💰', value: bonusAmount.toFixed(2) + ' zł', x: 300, color: '#ffd700' },
+        { label: '⭐', value: prestigeLevel, x: 500, color: '#667eea' }
+    ];
+
+    floorStats.forEach(stat => {
+        const boxWidth = 150;
+        const boxHeight = 120;
+        const boxX = stat.x - boxWidth / 2;
+        const boxY = 660;
+
+        // Box background
+        ctx.fillStyle = 'rgba(0,0,0,0.6)';
+        ctx.fillRect(boxX, boxY, boxWidth, boxHeight);
+
+        // Border
+        ctx.strokeStyle = stat.color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(boxX, boxY, boxWidth, boxHeight);
+
+        // Emoji/Icon
+        ctx.font = '32px "Courier New"';
+        ctx.textAlign = 'center';
+        ctx.fillText(stat.label, stat.x, boxY + 45);
+
+        // Value
+        ctx.fillStyle = stat.color;
+        ctx.font = 'bold 24px "Courier New"';
+        ctx.fillText(stat.value.toString(), stat.x, boxY + 90);
+    });
+
+    // Convert to blob and share/download
+    canvas.toBlob(blob => {
+        const file = new File([blob], 'zdk-wyniki.png', { type: 'image/png' });
+
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+            navigator.share({
+                files: [file]
+            }).catch(() => {
+                downloadImage(canvas);
+            });
+        } else {
+            downloadImage(canvas);
+        }
+    });
+}
+
+function downloadImage(canvas) {
+    const link = document.createElement('a');
+    link.download = 'zdk-wyniki.png';
+    link.href = canvas.toDataURL();
+    link.click();
+
+    modalTitle.textContent = '📸 Zrzut ekranu zapisany!';
+    modalText.textContent = 'Twoje wyniki zostały zapisane jako obraz.';
+    modal.classList.add('show');
+}
 
 prestigeBtn.addEventListener('click', () => {
     menuPanel.classList.remove('open');
@@ -479,7 +563,7 @@ closeAchievements.addEventListener('click', () => achievementsPanel.classList.re
 hamburgerBtn.addEventListener('click', () => menuPanel.classList.add('open'));
 closeMenu.addEventListener('click', () => menuPanel.classList.remove('open'));
 
-// Stats button (Patyki)
+// Stats button (Patyki) - ZMIENIONY KOD BŁĘDU
 statsBtn.addEventListener('click', () => {
     // Close menu
     menuPanel.classList.remove('open');
@@ -498,12 +582,35 @@ statsBtn.addEventListener('click', () => {
                 <div style="font-size:64px; margin-bottom:20px">📊</div>
                 <p style="font-size:20px; margin-bottom:15px"><strong>Patyki niedostępne</strong></p>
                 <p style="margin-bottom:20px; color:rgba(255,255,255,0.8);">
-                    Moduł statystyk jest obecnie w trakcie aktualizacji.<br>
                     Spróbuj ponownie <strong>jutro</strong>.
                 </p>
                 <p style="font-size:12px; opacity:0.6; font-style:italic;">
-                    Kod błędu: STATS_TEMP_UNAVAILABLE_001
+                    Kod błędu: RICHMAN_IS_UNAVAILABLE
                 </p>
+            </div>
+        `;
+        modal.classList.add('show');
+    }, 2000);
+});
+
+// Paski button
+paskiBtn.addEventListener('click', () => {
+    // Close menu
+    menuPanel.classList.remove('open');
+
+    // Show loading IMMEDIATELY
+    loadingModal.classList.add('show');
+
+    // Wait 2 seconds, then show error
+    setTimeout(() => {
+        loadingModal.classList.remove('show');
+
+        // Show error modal
+        modalTitle.textContent = '❌ Brak pasków';
+        modalText.innerHTML = `
+            <div style="text-align:center">
+                <div style="font-size:64px; margin-bottom:20px">📈</div>
+                <p style="font-size:24px; margin-bottom:15px"><strong>Nie ma pasków</strong></p>
             </div>
         `;
         modal.classList.add('show');

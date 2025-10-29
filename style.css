@@ -220,10 +220,10 @@ body {
     border-color: #555;
 }
 
-/* UI */
+/* UI - PRZENIESIONE NA DÓŁ */
 #uiContainer {
     position: fixed;
-    top: 20px;
+    bottom: 20px;
     left: 20px;
     z-index: 100;
     display: flex;
@@ -826,4 +826,12 @@ body {
     filter: blur(60px);
     z-index: 5;
     transform: rotate(-20deg);
+}
+
+.install-hint {
+    margin-top: 30px;
+    font-size: 14px;
+    color: rgba(255,255,255,0.8);
+    text-align: center;
+    line-height: 1.6;
 }
