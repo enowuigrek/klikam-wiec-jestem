@@ -7,6 +7,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Klikam więc jestem">
     <meta name="theme-color" content="#1a1a2e">
+    <link rel="apple-touch-icon" href="icon-192.png">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23ff6b6b'/%3E%3Ctext x='50' y='65' font-size='60' text-anchor='middle' fill='white' font-family='Arial'%3EZ%3C/text%3E%3C/svg%3E">
     <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%23ff6b6b' rx='40'/%3E%3Ctext x='90' y='120' font-size='100' text-anchor='middle' fill='white' font-family='Arial' font-weight='bold'%3EZ%3C/text%3E%3C/svg%3E">
     <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIktsaWthbSB3acSZYyBqZXN0ZW0iLAogICJzaG9ydF9uYW1lIjogIktsaWthbSIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgInN0YXJ0X3VybCI6ICIuIiwKICAiYmFja2dyb3VuZF9jb2xvciI6ICIjMWExYTJlIiwKICAidGhlbWVfY29sb3IiOiAiIzFhMWEyZSIsCiAgImljb25zIjogW3sKICAgICJzcmMiOiAiZGF0YTppbWFnZS9zdmcreG1sLCUzQ3N2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHZpZXdCb3g9JzAgMCAxODAgMTgwJyUzRSUzQ3JlY3Qgd2lkdGg9JzE4MCcgaGVpZ2h0PScxODAnIGZpbGw9JyUyM2ZmNmI2Yicgcng9JzQwJy8lM0UlM0N0ZXh0IHg9JzkwJyB5PScxMjAnIGZvbnQtc2l6ZT0nMTAwJyB0ZXh0LWFuY2hvcj0nbWlkZGxlJyBmaWxsPSd3aGl0ZScgZm9udC1mYW1pbHk9J0FyaWFsJyBmb250LXdlaWdodD0nYm9sZCclM0VaJTNDL3RleHQlM0UlM0Mvc3ZnJTNFIiwKICAgICJzaXplcyI6ICIxOTJ4MTkyIiwKICAgICJ0eXBlIjogImltYWdlL3N2Zyt4bWwiCiAgfSwgewogICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWwsJTNDc3ZnIHhtbG5zPSdodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2Zycgdmlld0JveD0nMCAwIDUxMiA1MTInJTNFJTNDcmVjdCB3aWR0aD0nNTEyJyBoZWlnaHQ9JzUxMicgZmlsbD0nJTIzZmY2YjZiJyByeD0nMTAwJy8lM0UlM0N0ZXh0IHg9JzI1NicgeT0nMzQwJyBmb250LXNpemU9JzMwMCcgdGV4dC1hbmNob3I9J21pZGRsZScgZmlsbD0nd2hpdGUnIGZvbnQtZmFtaWx5PSdBcmlhbCcgZm9udC13ZWlnaHQ9J2JvbGQnJTNFWiUzQy90ZXh0JTNFJTNDL3N2ZyUzRSIsCiAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogIH1dCn0=">
@@ -325,17 +326,17 @@
             bottom: 20px;
             left: 50%;
             transform: translateX(-50%);
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
             z-index: 100;
-            flex-wrap: wrap;
-            justify-content: center;
             padding: 0 20px;
-            max-width: calc(100% - 40px);
+            max-width: 500px;
+            width: calc(100% - 40px);
         }
 
         .action-btn {
-            padding: 12px 20px;
+            padding: 14px 20px;
             font-size: 15px;
             font-family: 'Courier New', monospace;
             font-weight: bold;
@@ -347,6 +348,7 @@
             transition: all 0.2s;
             box-shadow: 0 4px 15px rgba(102,126,234,0.4);
             white-space: nowrap;
+            text-align: center;
         }
 
         .action-btn:hover {
@@ -734,7 +736,8 @@
             .ui-label { font-size: 11px; }
             .window { width: 180px; height: 160px; right: 5%; top: 12%; }
             .celestial { width: 35px; height: 35px; }
-            .action-btn { font-size: 13px; padding: 10px 16px; }
+            .action-btn { font-size: 14px; padding: 12px 16px; }
+            #actionButtons { max-width: calc(100% - 20px); gap: 10px; bottom: 10px; }
             #zdkButton { font-size: 26px; padding: 20px 40px; }
             .window-light { width: 350px; height: 350px; }
             .plant { left: 5%; bottom: 20%; transform: scale(0.7); }
@@ -743,7 +746,6 @@
             #achievementsPanel { width: 100%; right: -100%; }
             .install-hint { font-size: 10px; max-width: 250px; }
             #uiContainer { top: 10px; left: 10px; gap: 8px; }
-            #actionButtons { gap: 8px; bottom: 15px; }
         }
     </style>
 </head>
@@ -1165,10 +1167,10 @@
         const buttonWidth = button.offsetWidth;
         const buttonHeight = button.offsetHeight;
 
-        const margin = 20;
+        const margin = 30; // Zwiększony margines
         let x, y;
         let attempts = 0;
-        const maxAttempts = 50;
+        const maxAttempts = 100;
 
         // Próbuj znaleźć pozycję która nie koliduje z UI
         do {
@@ -1176,20 +1178,20 @@
             y = Math.random() * (window.innerHeight - buttonHeight - margin * 2) + margin;
             attempts++;
 
-            // Sprawdź kolizję z UI w lewym górnym rogu
+            // Sprawdź kolizję z UI w lewym górnym rogu (większy margines)
             const collidesWithUI = (
-                x < uiRect.right + margin &&
+                x < uiRect.right + margin * 2 &&
                 x + buttonWidth > uiRect.left - margin &&
-                y < uiRect.bottom + margin &&
+                y < uiRect.bottom + margin * 2 &&
                 y + buttonHeight > uiRect.top - margin
             );
 
-            // Sprawdź kolizję z przyciskami akcji na dole
+            // Sprawdź kolizję z przyciskami akcji na dole (większy margines)
             const collidesWithActions = (
-                x < actionsRect.right + margin &&
-                x + buttonWidth > actionsRect.left - margin &&
-                y < actionsRect.bottom + margin &&
-                y + buttonHeight > actionsRect.top - margin
+                x < actionsRect.right + margin * 2 &&
+                x + buttonWidth > actionsRect.left - margin * 2 &&
+                y < actionsRect.bottom + margin * 2 &&
+                y + buttonHeight > actionsRect.top - margin * 2
             );
 
             if (!collidesWithUI && !collidesWithActions) {
