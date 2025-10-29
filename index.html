@@ -280,9 +280,11 @@
             left: 20px;
             z-index: 100;
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
             gap: 15px;
+            flex-wrap: wrap;
             pointer-events: none;
+            max-width: calc(100% - 40px);
         }
 
         .ui-box {
@@ -324,16 +326,17 @@
             left: 50%;
             transform: translateX(-50%);
             display: flex;
-            gap: 15px;
+            gap: 10px;
             z-index: 100;
             flex-wrap: wrap;
             justify-content: center;
             padding: 0 20px;
+            max-width: calc(100% - 40px);
         }
 
         .action-btn {
-            padding: 15px 30px;
-            font-size: 18px;
+            padding: 12px 20px;
+            font-size: 15px;
             font-family: 'Courier New', monospace;
             font-weight: bold;
             color: white;
@@ -343,6 +346,7 @@
             cursor: pointer;
             transition: all 0.2s;
             box-shadow: 0 4px 15px rgba(102,126,234,0.4);
+            white-space: nowrap;
         }
 
         .action-btn:hover {
@@ -725,11 +729,12 @@
 
         @media (max-width: 768px) {
             .title { font-size: 36px; }
-            .ui-box { font-size: 16px; padding: 12px 20px; }
-            .ui-value { font-size: 22px; }
+            .ui-box { font-size: 14px; padding: 10px 16px; }
+            .ui-value { font-size: 20px; }
+            .ui-label { font-size: 11px; }
             .window { width: 180px; height: 160px; right: 5%; top: 12%; }
             .celestial { width: 35px; height: 35px; }
-            .action-btn { font-size: 14px; padding: 10px 20px; }
+            .action-btn { font-size: 13px; padding: 10px 16px; }
             #zdkButton { font-size: 26px; padding: 20px 40px; }
             .window-light { width: 350px; height: 350px; }
             .plant { left: 5%; bottom: 20%; transform: scale(0.7); }
@@ -737,7 +742,8 @@
             .armchair { right: 15%; bottom: 20%; transform: scale(0.7); }
             #achievementsPanel { width: 100%; right: -100%; }
             .install-hint { font-size: 10px; max-width: 250px; }
-            #uiContainer { top: 10px; left: 10px; gap: 10px; }
+            #uiContainer { top: 10px; left: 10px; gap: 8px; }
+            #actionButtons { gap: 8px; bottom: 15px; }
         }
     </style>
 </head>
