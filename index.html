@@ -464,19 +464,59 @@
 
         /* Lampka */
         .lamp {
-            display: none;
+            position: absolute;
+            top: 8%;
+            left: 15%;
+            width: 80px;
+            height: 120px;
+            z-index: 4;
         }
 
         .lamp-cord {
-            display: none;
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 30px;
+            background: #333;
         }
 
         .lamp-shade {
-            display: none;
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 40px;
+            background: linear-gradient(to bottom, #ffd700 0%, #ffed4e 100%);
+            border-radius: 0 0 20px 20px;
+            border: 3px solid #d4af37;
+            transition: all 2s ease;
+        }
+
+        .lamp-shade.off {
+            background: linear-gradient(to bottom, #666 0%, #555 100%);
+            border-color: #444;
+            box-shadow: none;
         }
 
         .lamp-light {
-            display: none;
+            position: absolute;
+            top: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 100px;
+            background: radial-gradient(ellipse at top, rgba(255,235,59,0.3) 0%, transparent 70%);
+            pointer-events: none;
+            filter: blur(15px);
+            opacity: 1;
+            transition: opacity 2s ease;
+        }
+
+        .lamp-light.off {
+            opacity: 0;
         }
 
         /* Fotel */
