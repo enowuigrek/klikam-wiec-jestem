@@ -490,13 +490,19 @@ body {
     cursor: pointer;
     z-index: 50;
     box-shadow: 0 8px 0 #c92a2a, 0 12px 40px rgba(255,107,107,0.6);
+    transition: all 0.3s ease;
 }
 
 #zdkButton:hover {
     transform: translate(-50%, -50%) scale(1.05);
 }
 
-/* Modal */
+#zdkButton:active {
+    transform: translate(-50%, -50%) scale(0.95) rotate(5deg);
+    box-shadow: 0 4px 0 #c92a2a, 0 6px 20px rgba(255,107,107,0.4);
+}
+
+/* Modal - FIXED SCROLLING */
 #modal {
     position: fixed;
     top: 0;
@@ -509,6 +515,7 @@ body {
     align-items: center;
     z-index: 2000;
     padding: 20px;
+    overflow-y: auto;
 }
 
 #modal.show {
@@ -523,6 +530,9 @@ body {
     max-width: 600px;
     width: 100%;
     text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: auto;
 }
 
 .modal-title {
@@ -536,6 +546,8 @@ body {
     color: #fff;
     margin-bottom: 30px;
     line-height: 1.6;
+    max-height: 60vh;
+    overflow-y: auto;
 }
 
 .modal-btn {
@@ -708,6 +720,32 @@ body {
     background: rgba(59,130,246,0.1);
 }
 
+.mail-item.system-message {
+    border-color: #ff6b6b;
+    background: rgba(255,107,107,0.1);
+    animation: urgentPulse 2s infinite;
+}
+
+@keyframes urgentPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 rgba(255,107,107,0.4);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255,107,107,0.6);
+    }
+}
+
+.mail-item.system-message .mail-indicator {
+    background: #ff6b6b !important;
+    box-shadow: 0 0 15px #ff6b6b !important;
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
 .mail-indicator {
     width: 12px;
     height: 12px;
@@ -781,6 +819,48 @@ body {
 
 .mail-body strong {
     color: #3b82f6;
+}
+
+/* Achievement Notification - FIXED */
+#achievementNotification {
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #f093fb 0%, #764ba2 100%);
+    border: 4px solid #f093fb;
+    border-radius: 15px;
+    padding: 20px 30px;
+    z-index: 9999;
+    min-width: 300px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(240,147,251,0.5);
+    transition: top 0.5s ease;
+}
+
+#achievementNotification.show {
+    top: 80px;
+}
+
+.achievement-notif-title {
+    font-size: 14px;
+    color: rgba(255,255,255,0.9);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.achievement-notif-icon {
+    font-size: 48px;
+    margin: 10px 0;
+}
+
+.achievement-notif-name {
+    font-size: 20px;
+    color: white;
+    font-weight: bold;
+    margin-top: 8px;
 }
 
 /* Loading Modal */
@@ -868,6 +948,21 @@ body {
     .lamp-light {
         width: 150px;
         height: 150px;
+    }
+    .modal-content {
+        padding: 25px;
+    }
+    .modal-title {
+        font-size: 22px;
+    }
+    .modal-text {
+        font-size: 14px;
+    }
+    #achievementNotification {
+        min-width: 250px;
+    }
+    #achievementNotification.show {
+        top: 60px;
     }
 }
 
