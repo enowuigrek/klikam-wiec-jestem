@@ -95,11 +95,92 @@ const messages = [
     }
 ];
 
-// Pory dnia
+// Pory dnia - NOWY SYSTEM Z 7 PORAMI
 const timesOfDay = [
-    { sky: '#87ceeb', celestialColor: '#ffeb3b', celestialTop: '45%', wall: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)', floor: '#2d3748' },
-    { sky: '#5dade2', celestialColor: '#ffeb3b', celestialTop: '15%', wall: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)', floor: '#374151' },
-    { sky: '#f39c12', celestialColor: '#ffa500', celestialTop: '40%', wall: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', floor: '#4a3535' }
+    // 0 - Świt (Dawn)
+    {
+        name: 'Świt',
+        sky: 'linear-gradient(to bottom, #1a1c2c 0%, #5d275d 30%, #b13e53 60%, #ef7d57 80%, #ffcd75 100%)',
+        celestialColor: '#ffeb3b',
+        celestialTop: '70%',
+        celestialSize: '40px',
+        wall: 'linear-gradient(135deg, #4a5568 0%, #2d3748 100%)',
+        floor: '#1a202c',
+        windowLightOpacity: 0.15,
+        lampOn: false
+    },
+    // 1 - Ranek (Morning)
+    {
+        name: 'Ranek',
+        sky: 'linear-gradient(to bottom, #5dade2 0%, #85c1e9 40%, #a9cce3 100%)',
+        celestialColor: '#ffeb3b',
+        celestialTop: '50%',
+        celestialSize: '50px',
+        wall: 'linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%)',
+        floor: '#374151',
+        windowLightOpacity: 0.35,
+        lampOn: false
+    },
+    // 2 - Południe (Noon)
+    {
+        name: 'Południe',
+        sky: 'linear-gradient(to bottom, #3498db 0%, #5dade2 50%, #85c1e9 100%)',
+        celestialColor: '#fff700',
+        celestialTop: '20%',
+        celestialSize: '55px',
+        wall: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+        floor: '#4a5568',
+        windowLightOpacity: 0.5,
+        lampOn: false
+    },
+    // 3 - Popołudnie (Afternoon)
+    {
+        name: 'Popołudnie',
+        sky: 'linear-gradient(to bottom, #f39c12 0%, #e67e22 50%, #d35400 100%)',
+        celestialColor: '#ffa500',
+        celestialTop: '45%',
+        celestialSize: '50px',
+        wall: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+        floor: '#4a3535',
+        windowLightOpacity: 0.4,
+        lampOn: false
+    },
+    // 4 - Zmierzch (Dusk)
+    {
+        name: 'Zmierzch',
+        sky: 'linear-gradient(to bottom, #2c3e50 0%, #8e44ad 30%, #e74c3c 60%, #f39c12 100%)',
+        celestialColor: '#ff6b6b',
+        celestialTop: '75%',
+        celestialSize: '45px',
+        wall: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        floor: '#2d3748',
+        windowLightOpacity: 0.2,
+        lampOn: false
+    },
+    // 5 - Wieczór (Evening)
+    {
+        name: 'Wieczór',
+        sky: 'linear-gradient(to bottom, #0f2027 0%, #203a43 50%, #2c5364 100%)',
+        celestialColor: '#e8e8e8',
+        celestialTop: '35%',
+        celestialSize: '45px',
+        wall: 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)',
+        floor: '#0f172a',
+        windowLightOpacity: 0.05,
+        lampOn: true
+    },
+    // 6 - Noc (Night)
+    {
+        name: 'Noc',
+        sky: 'linear-gradient(to bottom, #000000 0%, #0a0e27 50%, #16213e 100%)',
+        celestialColor: '#f0f0f0',
+        celestialTop: '25%',
+        celestialSize: '50px',
+        wall: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+        floor: '#0f0f1e',
+        windowLightOpacity: 0,
+        lampOn: true
+    }
 ];
 
 // Audio
@@ -201,14 +282,25 @@ function updateAchievementsList() {
 
 function updateTimeOfDay() {
     const time = timesOfDay[currentTimeIndex];
+
+    // Aktualizacja nieba w oknie
     windowEl.style.background = time.sky;
+
+    // Aktualizacja ciała niebieskiego (słońce/księżyc)
     celestial.style.background = time.celestialColor;
     celestial.style.top = time.celestialTop;
+    celestial.style.width = time.celestialSize;
+    celestial.style.height = time.celestialSize;
+
+    // Aktualizacja ściany i podłogi
     document.querySelector('.wall').style.background = time.wall;
     document.querySelector('.floor').style.background = time.floor;
 
-    // Handle lamp for dark times
-    if (currentTimeIndex >= 5) {
+    // Obsługa światła z okna
+    windowLight.style.opacity = time.windowLightOpacity;
+
+    // Obsługa lampki
+    if (time.lampOn) {
         lampShade.classList.remove('off');
         lampLight.classList.remove('off');
     } else {
@@ -619,19 +711,13 @@ closeAchievements.addEventListener('click', () => achievementsPanel.classList.re
 hamburgerBtn.addEventListener('click', () => menuPanel.classList.add('open'));
 closeMenu.addEventListener('click', () => menuPanel.classList.remove('open'));
 
-// Stats button (Patyki) - ZMIENIONY KOD BŁĘDU
+// Stats button (Patyki)
 statsBtn.addEventListener('click', () => {
-    // Close menu
     menuPanel.classList.remove('open');
-
-    // Show loading IMMEDIATELY
     loadingModal.classList.add('show');
 
-    // Wait 2 seconds, then show error
     setTimeout(() => {
         loadingModal.classList.remove('show');
-
-        // Show error modal
         modalTitle.textContent = '❌ Błąd dostępu';
         modalText.innerHTML = `
             <div style="text-align:center">
@@ -651,17 +737,11 @@ statsBtn.addEventListener('click', () => {
 
 // Paski button
 paskiBtn.addEventListener('click', () => {
-    // Close menu
     menuPanel.classList.remove('open');
-
-    // Show loading IMMEDIATELY
     loadingModal.classList.add('show');
 
-    // Wait 2 seconds, then show error
     setTimeout(() => {
         loadingModal.classList.remove('show');
-
-        // Show error modal
         modalTitle.textContent = '❌ Brak pasków';
         modalText.innerHTML = `
             <div style="text-align:center">
