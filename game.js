@@ -9,14 +9,15 @@ let unlockedAchievements = new Set();
 let seenTimes = new Set();
 let readMessages = new Set();
 let moveButtonInterval = null;
+let isMusicMuted = false;
 
 // ===== ANTI-CHEAT SYSTEM =====
 let lastClickTime = 0;
 let clicksInSecond = 0;
 let suspiciousActivity = 0;
 let isCheater = false;
-const MAX_CLICKS_PER_SECOND = 15; // Humanly possible max
-const CHEAT_THRESHOLD = 3; // Strike system
+const MAX_CLICKS_PER_SECOND = 15;
+const CHEAT_THRESHOLD = 3;
 
 // ===== DOM ELEMENTS =====
 const button = document.getElementById('zdkButton');
@@ -42,6 +43,8 @@ const helpBtn = document.getElementById('helpBtn');
 const statsBtn = document.getElementById('statsBtn');
 const paskiBtn = document.getElementById('paskiBtn');
 const mailboxBtn = document.getElementById('mailboxBtn');
+const musicToggleBtn = document.getElementById('musicToggleBtn');
+const musicIcon = document.getElementById('musicIcon');
 const achievementsPanel = document.getElementById('achievementsPanel');
 const closeAchievements = document.getElementById('closeAchievements');
 const achievementsList = document.getElementById('achievementsList');
@@ -59,6 +62,44 @@ const loadingModal = document.getElementById('loadingModal');
 const achievementNotification = document.getElementById('achievementNotification');
 const notifAchievementName = document.getElementById('notifAchievementName');
 const notifAchievementIcon = document.getElementById('notifAchievementIcon');
+const bgMusic = document.getElementById('bgMusic');
+
+// ===== MUSIC SYSTEM =====
+function initMusic() {
+    const savedMuteState = localStorage.getItem('zdkMusicMuted');
+    if (savedMuteState === 'true') {
+        isMusicMuted = true;
+        bgMusic.muted = true;
+        musicIcon.textContent = '🔇';
+    } else {
+        isMusicMuted = false;
+        bgMusic.muted = false;
+        musicIcon.textContent = '🔊';
+    }
+    bgMusic.volume = 0.3;
+}
+
+function toggleMusic() {
+    isMusicMuted = !isMusicMuted;
+    bgMusic.muted = isMusicMuted;
+
+    if (isMusicMuted) {
+        musicIcon.textContent = '🔇';
+    } else {
+        musicIcon.textContent = '🔊';
+        bgMusic.play().catch(e => console.log('Music play blocked:', e));
+    }
+
+    localStorage.setItem('zdkMusicMuted', isMusicMuted);
+}
+
+function startBackgroundMusic() {
+    if (!isMusicMuted) {
+        bgMusic.play().catch(e => {
+            console.log('Music autoplay blocked. Will try after first click.', e);
+        });
+    }
+}
 
 // ===== ACHIEVEMENTS DATA =====
 const achievements = [
@@ -270,16 +311,16 @@ function playAchievementSound() {
     osc.connect(gain);
     gain.connect(audioContext.destination);
 
-    osc.frequency.value = 523.25; // C5
+    osc.frequency.value = 523.25;
     gain.gain.setValueAtTime(0.2, audioContext.currentTime);
     osc.start(audioContext.currentTime);
 
     setTimeout(() => {
-        osc.frequency.value = 659.25; // E5
+        osc.frequency.value = 659.25;
     }, 100);
 
     setTimeout(() => {
-        osc.frequency.value = 783.99; // G5
+        osc.frequency.value = 783.99;
     }, 200);
 
     gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
@@ -291,7 +332,6 @@ function detectCheating() {
     const now = Date.now();
     const timeDiff = now - lastClickTime;
 
-    // Reset counter every second
     if (timeDiff > 1000) {
         clicksInSecond = 1;
     } else {
@@ -300,7 +340,6 @@ function detectCheating() {
 
     lastClickTime = now;
 
-    // Check if clicking too fast
     if (clicksInSecond > MAX_CLICKS_PER_SECOND) {
         suspiciousActivity++;
 
@@ -314,17 +353,15 @@ function detectCheating() {
 }
 
 function triggerAntiCheat() {
-    if (isCheater) return; // Already caught
+    if (isCheater) return;
 
     isCheater = true;
 
-    // Stop the game
     stopButtonMovement();
     button.disabled = true;
     button.style.opacity = '0.5';
     button.style.cursor = 'not-allowed';
 
-    // Show the God of Electricity message
     showCheatDetectedModal();
 }
 
@@ -345,18 +382,15 @@ function showCheatDetectedModal() {
         </div>
     `;
 
-    // Mark God of Electricity message as unread
     readMessages.delete(2);
     updateUnreadBadge();
 
-    // Flash mail notification
     menuNotification.style.animation = 'pulse 0.5s infinite';
 
     modal.classList.add('show');
 }
 
 function resetGameProgress() {
-    // Clear everything
     clickCount = 0;
     bonusAmount = 0;
     prestigeLevel = 0;
@@ -367,28 +401,22 @@ function resetGameProgress() {
     suspiciousActivity = 0;
     isCheater = false;
 
-    // Update displays
     countDisplay.textContent = '0';
     bonusDisplay.textContent = '0.00';
     prestigeDisplay.textContent = '0';
 
-    // Re-enable button
     button.disabled = false;
     button.style.opacity = '1';
     button.style.cursor = 'pointer';
 
-    // Reset achievements list
     updateAchievementsList();
     updatePrestigeButton();
     updateTimeOfDay();
 
-    // Clear localStorage
     localStorage.removeItem('zdkGameState');
 
-    // Restart movement
     startButtonMovement();
 
-    // Save clean state
     saveGame();
 }
 
@@ -509,7 +537,7 @@ function updateTimeOfDay() {
     checkAchievements();
 }
 
-// ===== BUTTON MOVEMENT - FIXED TO MOVE BEFORE CLICK =====
+// ===== BUTTON MOVEMENT - CONTINUOUS SMOOTH MOVEMENT =====
 function moveButton() {
     const margin = 30;
     const maxAttempts = 100;
@@ -521,8 +549,8 @@ function moveButton() {
         newX = Math.random() * (window.innerWidth - button.offsetWidth - margin * 2) + margin;
         newY = Math.random() * (window.innerHeight - button.offsetHeight - margin * 2) + margin;
 
-        // Check if position is valid (not overlapping with UI elements)
         const uiBox = document.getElementById('uiContainer').getBoundingClientRect();
+        const musicBtnBox = document.getElementById('musicToggleBtn').getBoundingClientRect();
         const buttonRect = {
             left: newX,
             top: newY,
@@ -530,24 +558,28 @@ function moveButton() {
             bottom: newY + button.offsetHeight
         };
 
-        // Check collision with UI
-        const collision = !(buttonRect.right < uiBox.left ||
+        // Check collision with UI and music button
+        const uiCollision = !(buttonRect.right < uiBox.left ||
             buttonRect.left > uiBox.right ||
             buttonRect.bottom < uiBox.top ||
             buttonRect.top > uiBox.bottom);
 
-        if (!collision) {
+        const musicCollision = !(buttonRect.right < musicBtnBox.left ||
+            buttonRect.left > musicBtnBox.right ||
+            buttonRect.bottom < musicBtnBox.top ||
+            buttonRect.top > musicBtnBox.bottom);
+
+        if (!uiCollision && !musicCollision) {
             validPosition = true;
         }
         attempts++;
     }
 
-    // Calculate speed based on button speed level
-    const transitionTime = Math.max(0.1, 0.5 - (buttonSpeed - 1) * 0.04);
-    button.style.transition = `all ${transitionTime}s ease`;
+    // Calculate speed based on button speed level - smooth continuous movement
+    const transitionTime = Math.max(2, 5 - (buttonSpeed - 1) * 0.3);
+    button.style.transition = `all ${transitionTime}s linear`;
     button.style.left = newX + 'px';
     button.style.top = newY + 'px';
-    button.style.transform = '';
 }
 
 function startButtonMovement() {
@@ -555,8 +587,11 @@ function startButtonMovement() {
         clearInterval(moveButtonInterval);
     }
 
-    // Calculate interval based on speed level
-    const moveInterval = Math.max(500, 2000 - (buttonSpeed - 1) * 100);
+    // Move continuously - interval determines how often to pick a new destination
+    const moveInterval = Math.max(2000, 5000 - (buttonSpeed - 1) * 200);
+
+    // Initial move
+    moveButton();
 
     moveButtonInterval = setInterval(() => {
         moveButton();
@@ -611,7 +646,6 @@ function openMail(msg) {
     updateUnreadBadge();
     saveGame();
 
-    // Special handling for God of Electricity message
     const isGodMessage = msg.id === 2;
 
     mailView.innerHTML = `
@@ -638,33 +672,15 @@ function openMail(msg) {
         renderMailList();
     });
 
-    // Add reset confirmation handler for God message
     if (isGodMessage) {
         document.getElementById('confirmReset').addEventListener('click', () => {
-            // Show loading
             loadingModal.classList.add('show');
 
             setTimeout(() => {
-                // Execute reset
                 resetGameProgress();
-
                 loadingModal.classList.remove('show');
                 mailboxPanel.classList.remove('open');
-
-                // Show confirmation
-                modalTitle.textContent = '✅ System Zresetowany';
-                modalText.innerHTML = `
-                    <div style="text-align:center; padding:20px;">
-                        <div style="font-size:64px; margin-bottom:20px;">🔄</div>
-                        <p style="font-size:20px; margin-bottom:15px;"><strong>Fresh Start</strong></p>
-                        <p style="margin-bottom:20px;">Wszystkie dane zostały wyczyszczone. Wszyscy zaczynamy od nowa.</p>
-                        <p style="opacity:0.8; font-size:14px;">Pamiętaj: <strong>fair play only!</strong></p>
-                        <p style="margin-top:20px; font-size:12px; opacity:0.6; font-style:italic;">
-                            System monitoruje aktywność 24/7
-                        </p>
-                    </div>
-                `;
-                modal.classList.add('show');
+                // NO CONFIRMATION MODAL - user requested removal
             }, 2000);
         });
     }
@@ -677,7 +693,6 @@ function generateShareImage() {
     canvas.height = 800;
     const ctx = canvas.getContext('2d');
 
-    // Wall gradient
     const wallGradient = ctx.createLinearGradient(0, 0, 600, 640);
     wallGradient.addColorStop(0, '#667eea');
     wallGradient.addColorStop(0.5, '#764ba2');
@@ -685,11 +700,9 @@ function generateShareImage() {
     ctx.fillStyle = wallGradient;
     ctx.fillRect(0, 0, 600, 640);
 
-    // Floor
     ctx.fillStyle = '#2d3748';
     ctx.fillRect(0, 640, 600, 160);
 
-    // Title
     ctx.fillStyle = 'white';
     ctx.font = 'bold 48px "Courier New"';
     ctx.textAlign = 'center';
@@ -698,7 +711,6 @@ function generateShareImage() {
     ctx.fillText('KLIKAM WIĘC JESTEM', 300, 100);
     ctx.shadowBlur = 0;
 
-    // Player name
     if (playerName) {
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
         ctx.fillRect(150, 150, 300, 60);
@@ -707,7 +719,6 @@ function generateShareImage() {
         ctx.fillText(playerName, 300, 190);
     }
 
-    // Achievement title
     let achievementTitle = '';
     let achievementIcon = '';
     if (clickCount >= 10000) {
@@ -745,10 +756,8 @@ function generateShareImage() {
         ctx.fillText(`${achievementIcon} ${achievementTitle}`, 300, 240);
     }
 
-    // Stats
     const centerY = 380;
 
-    // Clicks
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(75, centerY - 80, 150, 110);
     ctx.strokeStyle = '#00ff88';
@@ -762,7 +771,6 @@ function generateShareImage() {
     ctx.font = '14px "Courier New"';
     ctx.fillText('kliknięć', 150, centerY + 18);
 
-    // Bonus
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(225, centerY - 80, 150, 110);
     ctx.strokeStyle = '#ffd700';
@@ -776,7 +784,6 @@ function generateShareImage() {
     ctx.font = '14px "Courier New"';
     ctx.fillText('premia', 300, centerY + 18);
 
-    // Prestige
     ctx.fillStyle = 'rgba(0,0,0,0.5)';
     ctx.fillRect(375, centerY - 80, 150, 110);
     ctx.strokeStyle = '#667eea';
@@ -790,12 +797,10 @@ function generateShareImage() {
     ctx.font = '14px "Courier New"';
     ctx.fillText('prestige', 450, centerY + 18);
 
-    // Footer
     ctx.fillStyle = 'rgba(255,255,255,0.7)';
     ctx.font = '18px "Courier New"';
     ctx.fillText('klikam-wiec-jestem.netlify.app', 300, 740);
 
-    // Convert to blob and share/download
     canvas.toBlob(blob => {
         const file = new File([blob], 'zdk-wyniki.png', { type: 'image/png' });
 
@@ -826,30 +831,42 @@ function downloadImage(canvas) {
 
 // Button click
 button.addEventListener('click', (e) => {
-    // Anti-cheat check
+    // Try to start music on first interaction if it hasn't started
+    if (bgMusic.paused && !isMusicMuted) {
+        bgMusic.play().catch(e => console.log('Music play blocked:', e));
+    }
+
     if (detectCheating()) {
-        return; // Block click if cheating detected
+        return;
     }
 
     clickCount++;
     countDisplay.textContent = clickCount;
     playClickSound();
 
-    // Add click animation
     button.style.transform = 'scale(0.9)';
     setTimeout(() => {
         button.style.transform = '';
     }, 100);
 
-    // Move button immediately after click
-    moveButton();
+    // Jump to new position immediately on click
+    button.style.transition = 'all 0.1s ease';
+    const margin = 30;
+    let newX = Math.random() * (window.innerWidth - button.offsetWidth - margin * 2) + margin;
+    let newY = Math.random() * (window.innerHeight - button.offsetHeight - margin * 2) + margin;
+    button.style.left = newX + 'px';
+    button.style.top = newY + 'px';
+
+    // Resume smooth movement after jump
+    setTimeout(() => {
+        moveButton();
+    }, 100);
 
     if (clickCount % 100 === 0) {
         bonusAmount += 2.09 * getPrestigeMultiplier();
         bonusDisplay.textContent = bonusAmount.toFixed(2);
         buttonSpeed++;
 
-        // Restart movement with new speed
         stopButtonMovement();
         startButtonMovement();
     }
@@ -863,6 +880,9 @@ button.addEventListener('click', (e) => {
     updatePrestigeButton();
     saveGame();
 });
+
+// Music toggle button
+musicToggleBtn.addEventListener('click', toggleMusic);
 
 // Withdraw button
 withdrawBtn.addEventListener('click', () => {
@@ -1036,9 +1056,7 @@ helpBtn.addEventListener('click', () => {
 
 // Modal close
 modalClose.addEventListener('click', () => {
-    // Check if this was the cheat detection modal
     if (modalTitle.textContent.includes('NIEAUTORYZOWANĄ AKTYWNOŚĆ')) {
-        // Open mailbox automatically to show the message
         mailboxPanel.classList.add('open');
         renderMailList();
         mailList.style.display = 'flex';
@@ -1049,9 +1067,7 @@ modalClose.addEventListener('click', () => {
 
 modal.addEventListener('click', e => {
     if (e.target === modal) {
-        // Check if this was the cheat detection modal
         if (modalTitle.textContent.includes('NIEAUTORYZOWANĄ AKTYWNOŚĆ')) {
-            // Open mailbox automatically
             mailboxPanel.classList.add('open');
             renderMailList();
             mailList.style.display = 'flex';
@@ -1070,12 +1086,17 @@ startButton.addEventListener('click', () => {
     }
     titleScreen.classList.add('hidden');
     setTimeout(() => titleScreen.style.display = 'none', 500);
-    moveButton();
+
+    // Start smooth continuous movement
     startButtonMovement();
     updateTimeOfDay();
+
+    // Start background music
+    startBackgroundMusic();
 });
 
 // ===== INITIALIZATION =====
+initMusic();
 loadGame();
 updateTimeOfDay();
 updateAchievementsList();

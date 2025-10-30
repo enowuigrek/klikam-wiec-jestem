@@ -12,7 +12,6 @@ body {
     position: relative;
 }
 
-/* Ekran tytułowy */
 #titleScreen {
     position: fixed;
     top: 0;
@@ -99,7 +98,6 @@ body {
     background: rgba(255,255,255,0.15);
 }
 
-/* Tło gry */
 #gameBackground {
     position: fixed;
     top: 0;
@@ -279,10 +277,9 @@ body {
     opacity: 0.5;
 }
 
-/* UI - PRZENIESIONE NA DÓŁ */
 #uiContainer {
     position: fixed;
-    bottom: 20px;
+    bottom: 15px;
     left: 20px;
     z-index: 100;
     display: flex;
@@ -320,7 +317,39 @@ body {
     color: #ffd700;
 }
 
-/* Hamburger Menu Button */
+/* Music Toggle Button - Bottom Right */
+.music-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    /*border: 3px solid #667eea;*/
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    box-shadow: 0 4px 20px rgba(102,126,234,0.5);
+}
+
+.music-toggle-btn:hover {
+    background: rgba(102,126,234,0.2);
+    transform: scale(1.1);
+    box-shadow: 0 6px 25px rgba(102,126,234,0.7);
+}
+
+.music-toggle-btn:active {
+    transform: scale(0.95);
+}
+
+.music-icon {
+    font-size: 28px;
+}
+
 .hamburger-btn {
     position: fixed;
     top: 20px;
@@ -358,7 +387,6 @@ body {
     box-shadow: 0 1px 3px rgba(0,0,0,0.3);
 }
 
-/* Menu notification badge */
 .menu-notification {
     position: absolute;
     top: 0;
@@ -382,7 +410,6 @@ body {
     50% { transform: scale(1.1); }
 }
 
-/* Menu Panel */
 .menu-panel {
     position: fixed;
     top: 0;
@@ -462,7 +489,6 @@ body {
     cursor: not-allowed;
 }
 
-/* Badge in menu item */
 .menu-item-badge {
     background: #3b82f6;
     color: white;
@@ -473,7 +499,6 @@ body {
     margin-left: 10px;
 }
 
-/* Przycisk ZDK */
 #zdkButton {
     position: absolute;
     left: 50%;
@@ -502,7 +527,6 @@ body {
     box-shadow: 0 4px 0 #c92a2a, 0 6px 20px rgba(255,107,107,0.4);
 }
 
-/* Modal - FIXED SCROLLING */
 #modal {
     position: fixed;
     top: 0;
@@ -561,7 +585,6 @@ body {
     cursor: pointer;
 }
 
-/* Panel osiągnięć */
 #achievementsPanel {
     position: fixed;
     top: 0;
@@ -645,7 +668,6 @@ body {
     font-weight: bold;
 }
 
-/* Panel skrzynki pocztowej */
 #mailboxPanel {
     position: fixed;
     top: 0;
@@ -821,10 +843,10 @@ body {
     color: #3b82f6;
 }
 
-/* Achievement Notification - FIXED */
+/* Achievement Notification - FIXED to go higher offscreen */
 #achievementNotification {
     position: fixed;
-    top: -200px;
+    top: -300px;
     left: 50%;
     transform: translateX(-50%);
     background: linear-gradient(135deg, #f093fb 0%, #764ba2 100%);
@@ -863,7 +885,6 @@ body {
     margin-top: 8px;
 }
 
-/* Loading Modal */
 .loading-modal {
     position: fixed;
     top: 0;
@@ -918,10 +939,9 @@ body {
     color: rgba(255,255,255,0.7);
 }
 
-/* Mobile */
 @media (max-width: 768px) {
     .title { font-size: 36px; }
-    #uiContainer { gap: 8px; }
+    #uiContainer { gap: 8px; bottom: 15px; }
     .ui-box { font-size: 12px; padding: 6px 10px; }
     .ui-value { font-size: 16px; }
     .ui-label { font-size: 11px; }
@@ -963,6 +983,15 @@ body {
     }
     #achievementNotification.show {
         top: 60px;
+    }
+    .music-toggle-btn {
+        width: 40px;
+        height: 40px;
+        bottom: 15px;
+        right: 15px;
+    }
+    .music-icon {
+        font-size: 24px;
     }
 }
 
