@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html>
 <body>
-<h1>Generator ikony ZDK</h1>
-<canvas id="canvas" width="192" height="192"></canvas>
+<h1>Generator ikony ZDK 512x512</h1>
+<canvas id="canvas" width="512" height="512"></canvas>
 <br>
-<button onclick="downloadIcon()">Pobierz ikonę</button>
+<button onclick="downloadIcon()">Pobierz ikonę 512x512</button>
 
 <script>
     const canvas = document.getElementById('canvas');
@@ -12,25 +12,25 @@
 
     // Tło
     ctx.fillStyle = '#ff6b6b';
-    ctx.fillRect(0, 0, 192, 192);
+    ctx.fillRect(0, 0, 512, 512);
 
     // Zaokrąglone rogi
     ctx.globalCompositeOperation = 'destination-in';
     ctx.beginPath();
-    ctx.roundRect(0, 0, 192, 192, 40);
+    ctx.roundRect(0, 0, 512, 512, 100);
     ctx.fill();
     ctx.globalCompositeOperation = 'source-over';
 
     // Tekst ZDK
     ctx.fillStyle = 'white';
-    ctx.font = 'bold 70px Arial';
+    ctx.font = 'bold 190px Arial';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText('ZDK', 96, 96);
+    ctx.fillText('ZDK', 256, 256);
 
     function downloadIcon() {
         const link = document.createElement('a');
-        link.download = 'icon-192.png';
+        link.download = 'icon-512.png';
         link.href = canvas.toDataURL();
         link.click();
     }
