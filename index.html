@@ -32,20 +32,70 @@
 
     <title>ZDK - Klikam więc jestem</title>
     <link rel="stylesheet" href="style.css">
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<!-- Ekran tytułowy -->
-<div id="titleScreen">
+<!-- Ekran logowania/rejestracji -->
+<div id="authScreen">
+    <div class="auth-container">
+        <div class="title">KLIKAM<br>WIĘC<br>JESTEM</div>
+
+        <div class="auth-tabs">
+            <button class="auth-tab active" id="loginTab">Logowanie</button>
+            <button class="auth-tab" id="registerTab">Rejestracja</button>
+        </div>
+
+        <!-- Login Form -->
+        <div class="auth-form" id="loginForm">
+            <input type="text" id="loginUsername" placeholder="Nazwa użytkownika" class="auth-input">
+            <input type="password" id="loginPassword" placeholder="Hasło" class="auth-input">
+            <button id="loginButton" class="auth-button">Zaloguj się</button>
+            <div class="auth-error" id="loginError"></div>
+        </div>
+
+        <!-- Register Form -->
+        <div class="auth-form hidden" id="registerForm">
+            <input type="text" id="registerUsername" placeholder="Nazwa użytkownika (min. 3 znaki)" class="auth-input">
+            <input type="password" id="registerPassword" placeholder="Hasło (min. 6 znaków)" class="auth-input">
+            <input type="password" id="registerPasswordConfirm" placeholder="Powtórz hasło" class="auth-input">
+            <div class="emoji-selector">
+                <label>Wybierz avatar:</label>
+                <div class="emoji-grid">
+                    <button class="emoji-btn selected" data-emoji="👤">👤</button>
+                    <button class="emoji-btn" data-emoji="😎">😎</button>
+                    <button class="emoji-btn" data-emoji="🤓">🤓</button>
+                    <button class="emoji-btn" data-emoji="🥸">🥸</button>
+                    <button class="emoji-btn" data-emoji="🤠">🤠</button>
+                    <button class="emoji-btn" data-emoji="👨‍💼">👨‍💼</button>
+                    <button class="emoji-btn" data-emoji="👩‍💼">👩‍💼</button>
+                    <button class="emoji-btn" data-emoji="🦸">🦸</button>
+                    <button class="emoji-btn" data-emoji="🧙">🧙</button>
+                    <button class="emoji-btn" data-emoji="🤖">🤖</button>
+                    <button class="emoji-btn" data-emoji="👽">👽</button>
+                    <button class="emoji-btn" data-emoji="🐱">🐱</button>
+                </div>
+            </div>
+            <button id="registerButton" class="auth-button">Zarejestruj się</button>
+            <div class="auth-error" id="registerError"></div>
+        </div>
+
+        <div class="auth-hint">
+            💡 Konto potrzebne do zapisu postępu i rankingu
+        </div>
+    </div>
+</div>
+
+<!-- Ekran tytułowy (po zalogowaniu) -->
+<div id="titleScreen" style="display:none;">
     <div class="title">KLIKAM<br>WIĘC<br>JESTEM</div>
-    <div class="name-input-container">
-        <label class="name-input-label" for="playerNameInput">Jak się nazywasz?</label>
-        <input type="text" id="playerNameInput" placeholder="Twoje imię" maxlength="20">
+    <div class="welcome-message">
+        <span id="welcomeEmoji">👤</span>
+        <span id="welcomeUsername">Gracz</span>
     </div>
     <button id="startButton">KLIK</button>
-    <div class="install-hint">
-        💡 Dodaj do ekranu głównego telefonu:<br>
-        Menu → "Dodaj do ekranu głównego"
-    </div>
+    <button id="logoutButton" class="logout-btn">Wyloguj się</button>
 </div>
 
 <!-- Tło gry -->
@@ -101,7 +151,7 @@
         <span></span>
         <span></span>
     </div>
-    <span class="menu-notification" id="menuNotification">2</span>
+    <span class="menu-notification" id="menuNotification">3</span>
 </button>
 
 <!-- Sliding Menu Panel -->
@@ -113,7 +163,7 @@
     <div class="menu-content">
         <button class="menu-item" id="mailboxBtn">
             📧 Poczta
-            <span class="menu-item-badge" id="mailBadge">2</span>
+            <span class="menu-item-badge" id="mailBadge">3</span>
         </button>
         <button class="menu-item" id="statsBtn">📊 Patyki</button>
         <button class="menu-item" id="paskiBtn">📈 Paski</button>
@@ -161,6 +211,28 @@
     </div>
 </div>
 
+<!-- Panel Patyki (Ranking) -->
+<div id="statsPanel">
+    <div class="stats-header">
+        <div class="stats-title">📊 Patyki</div>
+        <button class="close-stats" id="closeStats">×</button>
+    </div>
+    <div class="stats-content">
+        <div class="ranking-table">
+            <div class="ranking-header">
+                <div class="rank-col">#</div>
+                <div class="player-col">Pracownicy</div>
+                <div class="clicks-col">Kliknięcia</div>
+                <div class="prestige-col">⭐</div>
+            </div>
+            <div id="rankingList" class="ranking-list">
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+        <button id="refreshRanking" class="refresh-btn">🔄 Odśwież</button>
+    </div>
+</div>
+
 <!-- Notyfikacja osiągnięcia -->
 <div id="achievementNotification">
     <div class="achievement-notif-title">🎉 Osiągnięcie Odblokowane!</div>
@@ -172,7 +244,7 @@
 <div id="loadingModal" class="loading-modal">
     <div class="loading-content">
         <div class="loading-spinner"></div>
-        <h2>Czekaj, trwa przetwarzanie żądania...</h2>
+        <h2 id="loadingText">Czekaj, trwa przetwarzanie żądania...</h2>
     </div>
 </div>
 
@@ -181,6 +253,7 @@
     <source src="Pay for Performance.mp3" type="audio/mpeg">
 </audio>
 
+<script src="supabase-config.js"></script>
 <script src="game.js"></script>
 </body>
 </html>

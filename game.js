@@ -3,6 +3,7 @@ let clickCount = 0;
 let bonusAmount = 0;
 let prestigeLevel = 0;
 let playerName = '';
+let playerEmoji = '👤';
 let buttonSpeed = 1;
 let currentTimeIndex = 0;
 let unlockedAchievements = new Set();
@@ -10,23 +11,36 @@ let seenTimes = new Set();
 let readMessages = new Set();
 let moveButtonInterval = null;
 let isMusicMuted = false;
+let currentUser = null;
+let needsCloudSync = false;
 
-// ===== ANTI-CHEAT SYSTEM =====
+// ===== ANTI-CHEAT SYSTEM (IMPROVED - MORE TOLERANT) =====
 let lastClickTime = 0;
 let clicksInSecond = 0;
 let suspiciousActivity = 0;
+let lastSuspiciousTime = 0;
 let isCheater = false;
-const MAX_CLICKS_PER_SECOND = 15;
-const CHEAT_THRESHOLD = 3;
+const MAX_CLICKS_PER_SECOND = 25; // Increased from 15 to 25
+const CHEAT_THRESHOLD = 5; // Increased from 3 to 5
+const RESET_SUSPICION_TIME = 3000; // Reset suspicion after 3 seconds of normal clicking
+
+// ===== CLOUD SYNC SETTINGS =====
+const CLOUD_SYNC_INTERVAL = 30000; // 30 seconds
+const RANKING_REFRESH_INTERVAL = 10000; // 10 seconds
+let cloudSyncTimer = null;
+let rankingRefreshTimer = null;
 
 // ===== DOM ELEMENTS =====
 const button = document.getElementById('zdkButton');
 const countDisplay = document.getElementById('clickCount');
 const bonusDisplay = document.getElementById('bonusAmount');
 const prestigeDisplay = document.getElementById('prestigeLevel');
+const authScreen = document.getElementById('authScreen');
 const titleScreen = document.getElementById('titleScreen');
 const startButton = document.getElementById('startButton');
-const playerNameInput = document.getElementById('playerNameInput');
+const logoutButton = document.getElementById('logoutButton');
+const welcomeEmoji = document.getElementById('welcomeEmoji');
+const welcomeUsername = document.getElementById('welcomeUsername');
 const windowEl = document.getElementById('window');
 const celestial = document.getElementById('celestial');
 const lampShade = document.getElementById('lampShade');
@@ -59,10 +73,406 @@ const mailView = document.getElementById('mailView');
 const menuNotification = document.getElementById('menuNotification');
 const mailBadge = document.getElementById('mailBadge');
 const loadingModal = document.getElementById('loadingModal');
+const loadingText = document.getElementById('loadingText');
 const achievementNotification = document.getElementById('achievementNotification');
 const notifAchievementName = document.getElementById('notifAchievementName');
 const notifAchievementIcon = document.getElementById('notifAchievementIcon');
 const bgMusic = document.getElementById('bgMusic');
+
+// Stats Panel Elements
+const statsPanel = document.getElementById('statsPanel');
+const closeStats = document.getElementById('closeStats');
+const rankingList = document.getElementById('rankingList');
+const refreshRanking = document.getElementById('refreshRanking');
+const teamClicks = document.getElementById('teamClicks');
+const teamTarget = document.getElementById('teamTarget');
+const teamPercent = document.getElementById('teamPercent');
+const targetFill = document.getElementById('targetFill');
+
+// Auth Elements
+const loginTab = document.getElementById('loginTab');
+const registerTab = document.getElementById('registerTab');
+const loginForm = document.getElementById('loginForm');
+const registerForm = document.getElementById('registerForm');
+const loginUsername = document.getElementById('loginUsername');
+const loginPassword = document.getElementById('loginPassword');
+const loginButton = document.getElementById('loginButton');
+const loginError = document.getElementById('loginError');
+const registerUsername = document.getElementById('registerUsername');
+const registerPassword = document.getElementById('registerPassword');
+const registerPasswordConfirm = document.getElementById('registerPasswordConfirm');
+const registerButton = document.getElementById('registerButton');
+const registerError = document.getElementById('registerError');
+
+// ===== AUTHENTICATION SYSTEM =====
+
+let selectedEmoji = '👤';
+
+// Emoji selector
+document.querySelectorAll('.emoji-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+        document.querySelectorAll('.emoji-btn').forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        selectedEmoji = btn.dataset.emoji;
+    });
+});
+
+// Tab switching
+loginTab.addEventListener('click', () => {
+    loginTab.classList.add('active');
+    registerTab.classList.remove('active');
+    loginForm.classList.remove('hidden');
+    registerForm.classList.add('hidden');
+    loginError.textContent = '';
+    registerError.textContent = '';
+});
+
+registerTab.addEventListener('click', () => {
+    registerTab.classList.add('active');
+    loginTab.classList.remove('active');
+    registerForm.classList.remove('hidden');
+    loginForm.classList.add('hidden');
+    loginError.textContent = '';
+    registerError.textContent = '';
+});
+
+// Register
+registerButton.addEventListener('click', async () => {
+    const username = registerUsername.value.trim();
+    const password = registerPassword.value;
+    const passwordConfirm = registerPasswordConfirm.value;
+
+    registerError.textContent = '';
+
+    if (username.length < 3) {
+        registerError.textContent = 'Nazwa użytkownika musi mieć min. 3 znaki';
+        return;
+    }
+
+    if (password.length < 6) {
+        registerError.textContent = 'Hasło musi mieć min. 6 znaków';
+        return;
+    }
+
+    if (password !== passwordConfirm) {
+        registerError.textContent = 'Hasła nie są takie same';
+        return;
+    }
+
+    registerButton.disabled = true;
+    registerButton.textContent = 'Tworzenie konta...';
+
+    try {
+        // Check if username exists
+        const { data: existingUser } = await supabase
+            .from('profiles')
+            .select('username')
+            .eq('username', username)
+            .single();
+
+        if (existingUser) {
+            registerError.textContent = 'Ta nazwa użytkownika jest już zajęta';
+            registerButton.disabled = false;
+            registerButton.textContent = 'Zarejestruj się';
+            return;
+        }
+
+        // Create account using email format (username@zdk.local)
+        const email = `${username}@zdk.local`;
+        const { data, error } = await supabase.auth.signUp({
+            email: email,
+            password: password,
+            options: {
+                data: {
+                    username: username,
+                    avatar_emoji: selectedEmoji
+                }
+            }
+        });
+
+        if (error) throw error;
+
+        // Update profile with emoji
+        if (data.user) {
+            await supabase
+                .from('profiles')
+                .update({ avatar_emoji: selectedEmoji })
+                .eq('id', data.user.id);
+        }
+
+        // Auto login after registration
+        await loginUser(username, password);
+
+    } catch (error) {
+        console.error('Registration error:', error);
+        registerError.textContent = 'Błąd rejestracji: ' + error.message;
+        registerButton.disabled = false;
+        registerButton.textContent = 'Zarejestruj się';
+    }
+});
+
+// Login
+loginButton.addEventListener('click', async () => {
+    const username = loginUsername.value.trim();
+    const password = loginPassword.value;
+
+    loginError.textContent = '';
+
+    if (!username || !password) {
+        loginError.textContent = 'Wypełnij wszystkie pola';
+        return;
+    }
+
+    loginButton.disabled = true;
+    loginButton.textContent = 'Logowanie...';
+
+    await loginUser(username, password);
+});
+
+async function loginUser(username, password) {
+    try {
+        const email = `${username}@zdk.local`;
+        const { data, error } = await supabase.auth.signInWithPassword({
+            email: email,
+            password: password
+        });
+
+        if (error) throw error;
+
+        currentUser = data.user;
+
+        // Load profile
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (profile) {
+            playerName = profile.username;
+            playerEmoji = profile.avatar_emoji || '👤';
+            welcomeEmoji.textContent = playerEmoji;
+            welcomeUsername.textContent = playerName;
+        }
+
+        // Load game progress from cloud
+        await loadGameFromCloud();
+
+        // Hide auth screen, show title screen
+        authScreen.style.display = 'none';
+        titleScreen.style.display = 'flex';
+
+        loginButton.disabled = false;
+        loginButton.textContent = 'Zaloguj się';
+
+    } catch (error) {
+        console.error('Login error:', error);
+        loginError.textContent = 'Błąd logowania: Sprawdź nazwę użytkownika i hasło';
+        loginButton.disabled = false;
+        loginButton.textContent = 'Zaloguj się';
+    }
+}
+
+// Logout
+logoutButton.addEventListener('click', async () => {
+    await saveGameToCloud(); // Save before logout
+    await supabase.auth.signOut();
+    currentUser = null;
+    location.reload(); // Reload page to reset state
+});
+
+// Check if user is already logged in
+async function checkAuth() {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (session) {
+        currentUser = session.user;
+
+        // Load profile
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', currentUser.id)
+            .single();
+
+        if (profile) {
+            playerName = profile.username;
+            playerEmoji = profile.avatar_emoji || '👤';
+            welcomeEmoji.textContent = playerEmoji;
+            welcomeUsername.textContent = playerName;
+        }
+
+        // Load game progress
+        await loadGameFromCloud();
+
+        // Show title screen
+        authScreen.style.display = 'none';
+        titleScreen.style.display = 'flex';
+    }
+}
+
+// ===== CLOUD SAVE/LOAD SYSTEM =====
+
+async function saveGameToCloud() {
+    if (!currentUser) return;
+
+    try {
+        const gameData = {
+            user_id: currentUser.id,
+            click_count: clickCount,
+            bonus_amount: bonusAmount,
+            prestige_level: prestigeLevel,
+            button_speed: buttonSpeed,
+            current_time_index: currentTimeIndex,
+            unlocked_achievements: Array.from(unlockedAchievements),
+            seen_times: Array.from(seenTimes),
+            last_updated: new Date().toISOString()
+        };
+
+        const { error } = await supabase
+            .from('game_progress')
+            .upsert(gameData, { onConflict: 'user_id' });
+
+        if (error) throw error;
+
+        needsCloudSync = false;
+        console.log('✅ Game saved to cloud');
+
+    } catch (error) {
+        console.error('❌ Cloud save error:', error);
+    }
+}
+
+async function loadGameFromCloud() {
+    if (!currentUser) return;
+
+    try {
+        const { data, error } = await supabase
+            .from('game_progress')
+            .select('*')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+
+        if (data) {
+            clickCount = data.click_count || 0;
+            bonusAmount = parseFloat(data.bonus_amount) || 0;
+            prestigeLevel = data.prestige_level || 0;
+            buttonSpeed = data.button_speed || 1;
+            currentTimeIndex = data.current_time_index || 0;
+            unlockedAchievements = new Set(data.unlocked_achievements || []);
+            seenTimes = new Set(data.seen_times || []);
+
+            countDisplay.textContent = clickCount;
+            bonusDisplay.textContent = bonusAmount.toFixed(2);
+            prestigeDisplay.textContent = prestigeLevel;
+
+            updateTimeOfDay();
+            updateAchievementsList();
+            updatePrestigeButton();
+
+            console.log('✅ Game loaded from cloud');
+        }
+
+    } catch (error) {
+        console.error('❌ Cloud load error:', error);
+    }
+}
+
+// Auto-save to cloud every 30 seconds
+function startCloudSync() {
+    cloudSyncTimer = setInterval(async () => {
+        if (needsCloudSync) {
+            await saveGameToCloud();
+        }
+    }, CLOUD_SYNC_INTERVAL);
+}
+
+// Save on page close
+window.addEventListener('beforeunload', () => {
+    if (needsCloudSync && currentUser) {
+        saveGameToCloud();
+    }
+});
+
+// ===== RANKING SYSTEM =====
+
+async function loadRanking() {
+    try {
+        rankingList.innerHTML = '<div class="loading-spinner"></div>';
+
+        // Get top 50 players
+        const { data: topPlayers, error } = await supabase
+            .from('game_progress')
+            .select(`
+                click_count,
+                prestige_level,
+                user_id,
+                profiles (username, avatar_emoji)
+            `)
+            .order('click_count', { ascending: false })
+            .limit(50);
+
+        if (error) throw error;
+
+        // Render ranking
+        rankingList.innerHTML = '';
+
+        if (!topPlayers || topPlayers.length === 0) {
+            rankingList.innerHTML = '<div class="no-data">Brak danych rankingowych</div>';
+            return;
+        }
+
+        topPlayers.forEach((player, index) => {
+            const isCurrentUser = player.user_id === currentUser?.id;
+            const row = document.createElement('div');
+            row.className = 'ranking-row' + (isCurrentUser ? ' current-user' : '');
+
+            const medal = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : '';
+
+            row.innerHTML = `
+                <div class="rank-col">${medal || (index + 1)}</div>
+                <div class="player-col">
+                    <span class="player-emoji">${player.profiles?.avatar_emoji || '👤'}</span>
+                    <span class="player-name">${player.profiles?.username || 'Gracz'}</span>
+                </div>
+                <div class="clicks-col">${player.click_count.toLocaleString('pl-PL')}</div>
+                <div class="prestige-col">${player.prestige_level || 0}</div>
+            `;
+            rankingList.appendChild(row);
+        });
+
+        console.log('✅ Ranking loaded');
+
+    } catch (error) {
+        console.error('❌ Ranking load error:', error);
+        rankingList.innerHTML = '<div class="error-message">Błąd ładowania rankingu</div>';
+    }
+}
+
+// Refresh ranking when panel is open
+function startRankingRefresh() {
+    if (rankingRefreshTimer) clearInterval(rankingRefreshTimer);
+
+    rankingRefreshTimer = setInterval(() => {
+        if (statsPanel.classList.contains('open')) {
+            loadRanking();
+        }
+    }, RANKING_REFRESH_INTERVAL);
+}
+
+refreshRanking.addEventListener('click', loadRanking);
+
+statsBtn.addEventListener('click', () => {
+    statsPanel.classList.add('open');
+    menuPanel.classList.remove('open');
+    loadRanking();
+});
+
+closeStats.addEventListener('click', () => {
+    statsPanel.classList.remove('open');
+});
 
 // ===== MUSIC SYSTEM =====
 function initMusic() {
@@ -143,6 +553,109 @@ const messages = [
                <em>Best regards,</em><br>
                <strong>Management Board</strong><br>
                <span style="font-size:11px; opacity:0.7;">ZDK Corporation™ | Synergy Through Innovation</span></p>`,
+        date: new Date().toLocaleDateString('pl-PL'),
+        read: false
+    },
+    {
+        id: 5,
+        from: '🎯 ZDK Director',
+        subject: '🎉 Patyki są BACK! Nowy system targetów już wkrótce!',
+        preview: 'Kochani Klikacze! Mamy fantastyczne wiadomości...',
+        body: `<p><strong>Do: Wszyscy Klikacze</strong><br>
+               <strong>Od: ZDK Director</strong><br>
+               <strong>Data: ${new Date().toLocaleDateString('pl-PL')}</strong><br>
+               <strong>Priorytet: 🔥 HIGH PRIORITY</strong></p>
+               
+               <p style="font-size:20px; margin:25px 0; text-align:center;">
+               🎉✨ WIELKI COMEBACK! ✨🎉
+               </p>
+               
+               <p>Kochani Klikacze!</p>
+               
+               <p>Mam dla Was <strong>fantastyczne wiadomości</strong>! Po intensywnej pracy naszego IT Department, z dumą ogłaszam, że <strong>moduł Patyki został naprawiony i jest już DOSTĘPNY!</strong> 🚀</p>
+               
+               <p style="background:rgba(0,255,136,0.1); padding:20px; border-left:4px solid #00ff88; margin:25px 0;">
+               <strong>✅ STATUS AKTUALNY:</strong><br><br>
+               📊 <strong>Patyki 2.0: OPERATIONAL</strong><br>
+               🔄 System działa w trybie real-time<br>
+               📈 Dashboard dostępny 24/7<br>
+               ⚡ Performance: EXCELLENT<br>
+               </p>
+               
+               <p><strong>🎯 Co dalej? Targety już w drodze!</strong></p>
+               
+               <p>Obecnie wraz z Board of Directors pracujemy nad <strong>implementacją systemu targetów</strong>. To nie będą zwykłe cele - mówimy tu o comprehensive framework z:</p>
+               
+               <ul style="margin:20px 0; padding-left:30px; line-height:2;">
+               <li><strong>Dynamic targets</strong> dostosowane do Waszego performance 🎯</li>
+               <li><strong>Progress tracking</strong> w czasie rzeczywistym 📊</li>
+               <li><strong>Achievement milestones</strong> z visibility na wszystkich levels ⭐</li>
+               <li><strong>Team metrics</strong> showing collective impact 🤝</li>
+               </ul>
+               
+               <p style="background:rgba(102,126,234,0.1); padding:20px; border-radius:10px; margin:25px 0;">
+               <strong>📧 Jak tylko targety będą gotowe:</strong><br><br>
+               Dostaniecie <strong>dedykowanego maila</strong> z pełnym breakdown'em celów, metryk i expected outcomes. Wszystkie dane pojawią się automatycznie w module Patyki - wystarczy jeden klik i macie <strong>full transparency</strong>! 🎊
+               </p>
+               
+               <p><strong>⚠️ Ważna informacja: Fresh Start</strong></p>
+               
+               <p>W ramach procesu naprawy i upgrade'u systemu, <strong>wszystkie dotychczasowe kliknięcia zostały wyzerowane</strong>. Tak, wiem - to tough pill to swallow. Ale spojrzcie na to z innej perspektywy:</p>
+               
+               <p style="background:rgba(255,215,0,0.1); padding:20px; border-left:4px solid #ffd700; margin:25px 0;">
+               <strong>💪 To jest OPPORTUNITY, nie setback!</strong><br><br>
+               ✨ <strong>Clean slate</strong> - wszyscy startujemy z tego samego miejsca<br>
+               🏆 <strong>Fair competition</strong> - równe szanse dla każdego<br>
+               📈 <strong>New baselines</strong> - lepsze metrics od podstaw<br>
+               🎯 <strong>Fresh motivation</strong> - nowy kwartał, nowe cele!<br>
+               </p>
+               
+               <p><strong>🚀 Motywacja to klucz do sukcesu!</strong></p>
+               
+               <p>Pamiętajcie - to nie jest koniec, to <strong>nowy początek</strong>! W biznesie, każdy reset to szansa na <strong>improved performance</strong> i <strong>better results</strong>. Macie teraz unique opportunity żeby pokazać swój <strong>true potential</strong> od samego startu.</p>
+               
+               <p style="text-align:center; margin:30px 0; font-size:18px; color:#667eea; font-style:italic;">
+               "W świecie continuous improvement, każdy reset to upgrade,<br>a każdy początek to inwestycja w lepsze jutro."<br>
+               <span style="font-size:12px; opacity:0.7; margin-top:10px; display:block;">— Sun Tzu, "Art of Corporate Warfare"</span>
+               </p>
+               
+               <p><strong>💼 Co możecie zrobić już teraz?</strong></p>
+               
+               <ol style="margin:20px 0; padding-left:30px; line-height:2;">
+               <li>Otwórzcie <strong>moduł Patyki</strong> i zobaczcie nowy dashboard 📊</li>
+               <li>Zacznijcie <strong>budować swoje metrics</strong> od zera 📈</li>
+               <li>Stay tuned na <strong>mail z targetami</strong> - coming soon! 📧</li>
+               <li>Keep clicking - każde kliknięcie się liczy! 💪</li>
+               </ol>
+               
+               <p style="background:rgba(255,255,255,0.05); padding:25px; border-radius:15px; margin:25px 0; font-family:monospace; font-size:13px; line-height:1.8;">
+               Leveraging our cutting-edge analytics infrastructure, we're implementing a paradigm shift in performance measurement methodology. The synergistic integration of real-time data visualization with predictive modeling algorithms enables unprecedented transparency and actionable insights. This transformational approach to KPI tracking represents a quantum leap in our organizational capability to optimize resource allocation and maximize ROI across all operational verticals. Moving forward, our focus on data-driven decision making will empower each stakeholder to achieve peak performance through continuous feedback loops and agile metric refinement.
+               </p>
+               
+               <p style="font-size:11px; opacity:0.5; font-style:italic; margin-top:15px;">
+               (Znowu po spotkaniu z board'em... Ale serio - Patyki działają i będzie SUPER! 😄)
+               </p>
+               
+               <p style="margin-top:40px;"><strong>Bottom line:</strong></p>
+               <p>System naprawiony ✅<br>
+               Targety w przygotowaniu ⏳<br>
+               Wyniki wyzerowane 🔄<br>
+               Motywacja na max 🚀<br>
+               <strong>Let's make this quarter LEGENDARY!</strong> 🏆</p>
+               
+               <p style="text-align:center; margin:30px 0; font-size:28px;">
+               🎯 Time to SHINE! 🎯
+               </p>
+               
+               <p style="margin-top:40px; padding-top:25px; border-top:2px solid rgba(102,126,234,0.3);">
+               <strong>🎯 ZDK Director</strong><br>
+               <span style="font-size:12px; opacity:0.7;">Head of Clicking Operations</span><br>
+               <span style="font-size:11px; opacity:0.5; font-style:italic;">"Every click counts, every reset matters"</span>
+               </p>
+               
+               <p style="font-size:10px; opacity:0.4; margin-top:20px; text-align:center;">
+               PS: Jeśli macie jakieś concerns regarding the reset - my door is always open! (Metaforycznie, bo pracuję remote.) 💻
+               </p>`,
         date: new Date().toLocaleDateString('pl-PL'),
         read: false
     },
@@ -401,10 +914,15 @@ function playAchievementSound() {
     osc.stop(audioContext.currentTime + 0.5);
 }
 
-// ===== ANTI-CHEAT SYSTEM =====
+// ===== IMPROVED ANTI-CHEAT SYSTEM =====
 function detectCheating() {
     const now = Date.now();
     const timeDiff = now - lastClickTime;
+
+    // Reset suspicion after 3 seconds of normal clicking
+    if (now - lastSuspiciousTime > RESET_SUSPICION_TIME) {
+        suspiciousActivity = 0;
+    }
 
     if (timeDiff > 1000) {
         clicksInSecond = 1;
@@ -416,6 +934,9 @@ function detectCheating() {
 
     if (clicksInSecond > MAX_CLICKS_PER_SECOND) {
         suspiciousActivity++;
+        lastSuspiciousTime = now;
+
+        console.warn(`⚠️ Fast clicking detected: ${clicksInSecond} clicks/sec (${suspiciousActivity}/${CHEAT_THRESHOLD})`);
 
         if (suspiciousActivity >= CHEAT_THRESHOLD) {
             triggerAntiCheat();
@@ -449,95 +970,21 @@ function showCheatDetectedModal() {
             <p style="opacity:0.8; font-size:14px; margin-bottom:20px;">
                 Click velocity: <strong>${clicksInSecond} clicks/second</strong><br>
                 Threshold: ${MAX_CLICKS_PER_SECOND} clicks/second<br>
+                Violations: ${suspiciousActivity}/${CHEAT_THRESHOLD}<br>
                 Status: <span style="color:#ff6b6b;">VIOLATION DETECTED</span>
             </p>
-            <p style="margin-bottom:15px;">📧 Sprawdź swoją <strong>skrzynkę pocztową</strong> w celu uzyskania dalszych informacji.</p>
-            <p style="font-size:12px; opacity:0.6; font-style:italic;">Komunikat od Boga Prądu czeka na Ciebie...</p>
+            <p style="margin-bottom:15px;">Odśwież stronę i graj fair! 🎮</p>
+            <p style="font-size:12px; opacity:0.6; font-style:italic;">System jest teraz bardziej tolerancyjny (25 kliknięć/s), ale nadal nie pozwala na boty.</p>
         </div>
     `;
-
-    readMessages.delete(4);
-    updateUnreadBadge();
-
-    menuNotification.style.animation = 'pulse 0.5s infinite';
 
     modal.classList.add('show');
 }
 
-function resetGameProgress() {
-    clickCount = 0;
-    bonusAmount = 0;
-    prestigeLevel = 0;
-    buttonSpeed = 1;
-    currentTimeIndex = 0;
-    unlockedAchievements.clear();
-    seenTimes.clear();
-    suspiciousActivity = 0;
-    isCheater = false;
-
-    countDisplay.textContent = '0';
-    bonusDisplay.textContent = '0.00';
-    prestigeDisplay.textContent = '0';
-
-    button.disabled = false;
-    button.style.opacity = '1';
-    button.style.cursor = 'pointer';
-
-    updateAchievementsList();
-    updatePrestigeButton();
-    updateTimeOfDay();
-
-    localStorage.removeItem('zdkGameState');
-
-    startButtonMovement();
-
-    saveGame();
-}
 
 // ===== GAME LOGIC =====
 function getPrestigeMultiplier() {
     return 1 + (prestigeLevel * 0.1);
-}
-
-function loadGame() {
-    const saved = localStorage.getItem('zdkGameState');
-    if (saved) {
-        const state = JSON.parse(saved);
-        clickCount = state.clicks || 0;
-        bonusAmount = state.bonus || 0;
-        prestigeLevel = state.prestige || 0;
-        playerName = state.playerName || '';
-        buttonSpeed = state.speed || 1;
-        currentTimeIndex = state.timeIndex || 0;
-        unlockedAchievements = new Set(state.achievements || []);
-        seenTimes = new Set(state.seenTimes || []);
-        readMessages = new Set(state.readMessages || []);
-
-        countDisplay.textContent = clickCount;
-        bonusDisplay.textContent = bonusAmount.toFixed(2);
-        prestigeDisplay.textContent = prestigeLevel;
-        if (playerName) playerNameInput.value = playerName;
-
-        updateTimeOfDay();
-        updateAchievementsList();
-        updatePrestigeButton();
-        updateUnreadBadge();
-    }
-}
-
-function saveGame() {
-    const state = {
-        clicks: clickCount,
-        bonus: bonusAmount,
-        prestige: prestigeLevel,
-        playerName: playerName,
-        speed: buttonSpeed,
-        timeIndex: currentTimeIndex,
-        achievements: Array.from(unlockedAchievements),
-        seenTimes: Array.from(seenTimes),
-        readMessages: Array.from(readMessages)
-    };
-    localStorage.setItem('zdkGameState', JSON.stringify(state));
 }
 
 function updatePrestigeButton() {
@@ -555,7 +1002,7 @@ function checkAchievements() {
             unlockedAchievements.add(ach.id);
             showAchievementNotification(ach);
             updateAchievementsList();
-            saveGame();
+            needsCloudSync = true;
         }
     });
 }
@@ -632,7 +1079,6 @@ function moveButton() {
             bottom: newY + button.offsetHeight
         };
 
-        // Check collision with UI and music button
         const uiCollision = !(buttonRect.right < uiBox.left ||
             buttonRect.left > uiBox.right ||
             buttonRect.bottom < uiBox.top ||
@@ -649,7 +1095,6 @@ function moveButton() {
         attempts++;
     }
 
-    // Calculate speed based on button speed level - smooth continuous movement
     const transitionTime = Math.max(2, 5 - (buttonSpeed - 1) * 0.3);
     button.style.transition = `all ${transitionTime}s linear`;
     button.style.left = newX + 'px';
@@ -661,10 +1106,8 @@ function startButtonMovement() {
         clearInterval(moveButtonInterval);
     }
 
-    // Move continuously - interval determines how often to pick a new destination
     const moveInterval = Math.max(2000, 5000 - (buttonSpeed - 1) * 200);
 
-    // Initial move
     moveButton();
 
     moveButtonInterval = setInterval(() => {
@@ -718,23 +1161,11 @@ function renderMailList() {
 function openMail(msg) {
     readMessages.add(msg.id);
     updateUnreadBadge();
-    saveGame();
-
-    const isGodMessage = msg.id === 4;
 
     mailView.innerHTML = `
         <button class="mail-back" id="mailBackBtn">← Powrót</button>
         <div class="mail-subject-view">${msg.subject}</div>
         <div class="mail-body">${msg.body}</div>
-        ${isGodMessage ? `
-            <div style="margin-top:30px; text-align:center; padding:20px; background:rgba(255,107,107,0.1); border-radius:10px;">
-                <p style="font-size:18px; font-weight:bold; margin-bottom:15px; color:#ff6b6b;">⚠️ WYMAGANA AKCJA</p>
-                <p style="margin-bottom:20px; opacity:0.9;">Kliknij poniżej aby potwierdzić zrozumienie i rozpocząć od nowa.</p>
-                <button id="confirmReset" style="padding:15px 40px; font-size:18px; background:#ff6b6b; color:white; border:3px solid #c92a2a; border-radius:10px; cursor:pointer; font-family:inherit; font-weight:bold;">
-                    ⚡ Rozumiem i akceptuję reset
-                </button>
-            </div>
-        ` : ''}
     `;
 
     mailList.style.display = 'none';
@@ -745,19 +1176,6 @@ function openMail(msg) {
         mailList.style.display = 'flex';
         renderMailList();
     });
-
-    if (isGodMessage) {
-        document.getElementById('confirmReset').addEventListener('click', () => {
-            loadingModal.classList.add('show');
-
-            setTimeout(() => {
-                resetGameProgress();
-                loadingModal.classList.remove('show');
-                mailboxPanel.classList.remove('open');
-                // NO CONFIRMATION MODAL - user requested removal
-            }, 2000);
-        });
-    }
 }
 
 // ===== SHARE SYSTEM =====
@@ -790,7 +1208,7 @@ function generateShareImage() {
         ctx.fillRect(150, 150, 300, 60);
         ctx.fillStyle = '#00ff88';
         ctx.font = 'bold 32px "Courier New"';
-        ctx.fillText(playerName, 300, 190);
+        ctx.fillText(`${playerEmoji} ${playerName}`, 300, 190);
     }
 
     let achievementTitle = '';
@@ -905,7 +1323,6 @@ function downloadImage(canvas) {
 
 // Button click
 button.addEventListener('click', (e) => {
-    // Try to start music on first interaction if it hasn't started
     if (bgMusic.paused && !isMusicMuted) {
         bgMusic.play().catch(e => console.log('Music play blocked:', e));
     }
@@ -917,13 +1334,13 @@ button.addEventListener('click', (e) => {
     clickCount++;
     countDisplay.textContent = clickCount;
     playClickSound();
+    needsCloudSync = true;
 
     button.style.transform = 'scale(0.9)';
     setTimeout(() => {
         button.style.transform = '';
     }, 100);
 
-    // Jump to new position immediately on click
     button.style.transition = 'all 0.1s ease';
     const margin = 30;
     let newX = Math.random() * (window.innerWidth - button.offsetWidth - margin * 2) + margin;
@@ -931,7 +1348,6 @@ button.addEventListener('click', (e) => {
     button.style.left = newX + 'px';
     button.style.top = newY + 'px';
 
-    // Resume smooth movement after jump
     setTimeout(() => {
         moveButton();
     }, 100);
@@ -952,7 +1368,6 @@ button.addEventListener('click', (e) => {
 
     checkAchievements();
     updatePrestigeButton();
-    saveGame();
 });
 
 // Music toggle button
@@ -1008,7 +1423,7 @@ withdrawBtn.addEventListener('click', () => {
 
         bonusAmount = 0;
         bonusDisplay.textContent = '0.00';
-        saveGame();
+        needsCloudSync = true;
     }
     modal.classList.add('show');
     menuPanel.classList.remove('open');
@@ -1033,7 +1448,7 @@ prestigeBtn.addEventListener('click', () => {
             <button id="cancelPrestige" style="margin:10px;padding:15px 30px;font-size:18px;background:#ff6b6b;color:white;border:3px solid #c92a2a;border-radius:10px;cursor:pointer;font-family:inherit;font-weight:bold">✗ Anuluj</button>`;
         modal.classList.add('show');
 
-        document.getElementById('confirmPrestige').addEventListener('click', () => {
+        document.getElementById('confirmPrestige').addEventListener('click', async () => {
             prestigeLevel++;
             clickCount = bonusAmount = buttonSpeed = 0;
             currentTimeIndex = 0;
@@ -1046,7 +1461,10 @@ prestigeBtn.addEventListener('click', () => {
 
             updateTimeOfDay();
             updatePrestigeButton();
-            saveGame();
+
+            needsCloudSync = true;
+            await saveGameToCloud();
+
             modal.classList.remove('show');
         });
 
@@ -1067,34 +1485,11 @@ closeAchievements.addEventListener('click', () => achievementsPanel.classList.re
 hamburgerBtn.addEventListener('click', () => menuPanel.classList.add('open'));
 closeMenu.addEventListener('click', () => menuPanel.classList.remove('open'));
 
-// Stats button
-statsBtn.addEventListener('click', () => {
-    menuPanel.classList.remove('open');
-    loadingModal.classList.add('show');
-
-    setTimeout(() => {
-        loadingModal.classList.remove('show');
-        modalTitle.textContent = '❌ Błąd dostępu';
-        modalText.innerHTML = `
-            <div style="text-align:center">
-                <div style="font-size:64px; margin-bottom:20px">📊</div>
-                <p style="font-size:20px; margin-bottom:15px"><strong>Patyki niedostępne</strong></p>
-                <p style="margin-bottom:20px; color:rgba(255,255,255,0.8);">
-                    Spróbuj ponownie <strong>jutro</strong>.
-                </p>
-                <p style="font-size:12px; opacity:0.6; font-style:italic;">
-                    Kod błędu: RICHMAN_IS_ON_ELQUATRO
-                </p>
-            </div>
-        `;
-        modal.classList.add('show');
-    }, 2000);
-});
-
 // Paski button
 paskiBtn.addEventListener('click', () => {
     menuPanel.classList.remove('open');
     loadingModal.classList.add('show');
+    loadingText.textContent = 'Czekaj, trwa przetwarzanie żądania...';
 
     setTimeout(() => {
         loadingModal.classList.remove('show');
@@ -1130,49 +1525,29 @@ helpBtn.addEventListener('click', () => {
 
 // Modal close
 modalClose.addEventListener('click', () => {
-    if (modalTitle.textContent.includes('NIEAUTORYZOWANĄ AKTYWNOŚĆ')) {
-        mailboxPanel.classList.add('open');
-        renderMailList();
-        mailList.style.display = 'flex';
-        mailView.classList.remove('active');
-    }
     modal.classList.remove('show');
 });
 
 modal.addEventListener('click', e => {
     if (e.target === modal) {
-        if (modalTitle.textContent.includes('NIEAUTORYZOWANĄ AKTYWNOŚĆ')) {
-            mailboxPanel.classList.add('open');
-            renderMailList();
-            mailList.style.display = 'flex';
-            mailView.classList.remove('active');
-        }
         modal.classList.remove('show');
     }
 });
 
 // Start button
 startButton.addEventListener('click', () => {
-    const nameValue = playerNameInput.value.trim();
-    if (nameValue) {
-        playerName = nameValue;
-        saveGame();
-    }
-    titleScreen.classList.add('hidden');
-    setTimeout(() => titleScreen.style.display = 'none', 500);
+    titleScreen.style.display = 'none';
 
-    // Start smooth continuous movement
     startButtonMovement();
     updateTimeOfDay();
-
-    // Start background music
     startBackgroundMusic();
+    startCloudSync();
+    startRankingRefresh();
 });
 
 // ===== INITIALIZATION =====
 initMusic();
-loadGame();
 updateTimeOfDay();
 updateAchievementsList();
 updateUnreadBadge();
-setInterval(saveGame, 5000);
+checkAuth(); // Check if user is logged in
