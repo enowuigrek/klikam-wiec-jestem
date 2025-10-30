@@ -983,6 +983,8 @@ body {
     max-width: 450px;
     width: 90%;
     text-align: center;
+    max-height: 90vh;
+    overflow-y: auto;
 }
 
 .auth-tabs {
@@ -1109,13 +1111,6 @@ body {
     color: #ff6b6b;
     font-size: 14px;
     min-height: 20px;
-}
-
-.auth-hint {
-    margin-top: 20px;
-    font-size: 14px;
-    color: rgba(255,255,255,0.7);
-    line-height: 1.6;
 }
 
 /* ===== WELCOME MESSAGE ===== */
