@@ -147,7 +147,7 @@ const messages = [
         read: false
     },
     {
-        id: 2,
+        id: 4,
         from: '⚡ Bóg Prądu',
         subject: 'Dziwne ruchy w systemie - reset dla wszystkich',
         preview: 'Zauważyliśmy dziwne rzeczy w systemie kliknięć...',
@@ -206,6 +206,80 @@ const messages = [
         date: new Date().toLocaleDateString('pl-PL'),
         read: false,
         isSystemMessage: true
+    },
+    {
+        id: 3,
+        from: '🎯 ZDK Director',
+        subject: '🥤 Święto Napojów Wyskokowych - dzisiaj możesz pić przy klikaniu!',
+        preview: 'Kochani Klikacze! Z okazji Święta Napojów Wyskokowych...',
+        body: `<p><strong>Do: Wszyscy Klikacze</strong><br>
+               <strong>Od: ZDK Director</strong><br>
+               <strong>Data: 30.10.2025</strong><br>
+               <strong>Priorytet: 🔥 CELEBRATION MODE</strong></p>
+               
+               <p style="font-size:20px; margin:25px 0; text-align:center;">
+               🥤🎉 Kochani Klikacze! 🎉🥤
+               </p>
+               
+               <p>Dzisiaj mamy do ogłoszenia coś <strong>absolutnie wyjątkowego</strong>! Jak zapewne wiecie, 30 października to <strong>Międzynarodowe Święto Napojów Wyskokowych</strong> (International Carbonated Beverage Day).</p>
+               
+               <p style="background:rgba(255,215,0,0.1); padding:20px; border-left:4px solid #ffd700; margin:25px 0;">
+               <strong>🥤 WYJĄTKOWE OGŁOSZENIE:</strong><br><br>
+               Z okazji tego niezwykłego święta, <strong>dzisiaj wyjątkowo MOŻECIE PIĆ podczas klikania!</strong><br><br>
+               Tak, dobrze czytacie! Dziś możecie się orzeźwić, zregenerować i kontynuować swoją świetną pracę z napojem gazowanym w ręku! 🎊<br><br>
+               <span style="font-size:12px; opacity:0.7; font-style:italic;">*Napoje we własnym zakresie. Firma nie pokrywa kosztów. Można kupić w automacie na parterze (ceny rynkowe + 300% markup za convenience). Alternatywnie: woda z kranu jest za darmo! 💧</span>
+               </p>
+               
+               <p><strong>💪 Motywacja to podstawa!</strong></p>
+               
+               <p>Pamiętajcie, że każde kliknięcie to nie tylko liczba w systemie - to Wasze <strong>zaangażowanie</strong>, Wasza <strong>determinacja</strong>, Wasz <strong>wkład w sukces całego zespołu</strong>!</p>
+               
+               <p>Kiedy myślicie, że już nie dacie rady - weźcie głęboki oddech (lub łyk gazowanego napoju!), popatrzcie na swój licznik kliknięć i przypomnijcie sobie:</p>
+               
+               <ul style="margin:20px 0; padding-left:30px; line-height:2;">
+               <li><strong>Każde kliknięcie ma znaczenie</strong> 💼</li>
+               <li><strong>Premia czeka na końcu tunelu</strong> 💰</li>
+               <li><strong>Prestige to nie tylko status, to styl życia</strong> ⭐</li>
+               <li><strong>Razem jesteśmy silniejsi</strong> 🤝</li>
+               </ul>
+               
+               <p style="background:rgba(102,126,234,0.1); padding:20px; border-radius:10px; margin:25px 0; text-align:center;">
+               <em style="font-size:18px; color:#667eea;">"Nie liczą się spadające wskaźniki, nie liczą się resetujące się premie - liczy się to, że <strong>nie przestajemy klikać</strong>."</em><br>
+               <span style="font-size:12px; opacity:0.7; margin-top:10px; display:block;">— Confucius, prawdopodobnie</span>
+               </p>
+               
+               <p><strong>🚀 Patrzcie w przyszłość!</strong></p>
+               
+               <p>Ten kwartał będzie przełomowy. Wiem to, czuję to, <strong>widzę to w Waszych licznikach</strong>. Jesteście niesamowici. Wasza produktywność, Wasze KPI, Wasz click-through rate - wszystko to świadczy o tym, że jesteśmy na dobrej drodze do osiągnięcia naszych celów.</p>
+               
+               <p>A teraz, żeby nie było że tylko pusta gadka - przechodzę do sedna sprawy:</p>
+               
+               <p style="background:rgba(255,255,255,0.05); padding:25px; border-radius:15px; margin:25px 0; font-family:monospace; font-size:13px; line-height:1.8;">
+               Współczesna rzeczywistość biznesowa wymaga od nas nie tylko adaptacji do dynamicznie zmieniających się warunków rynkowych, ale również proaktywnego podejścia do implementacji innowacyjnych rozwiązań w obszarze digital transformation. W kontekście naszych ongoing initiatives, należy podkreślić kluczową rolę synergii międzydziałowej oraz holistycznego approach do optymalizacji workflow. Leverage naszych core competencies w zakresie agile methodology pozwala na continuous improvement i sustainable growth. Moving forward, będziemy focus'ować się na strategic alignment z long-term vision, jednocześnie maintain'ując flexibility w short-term execution. To win-win situation dla wszystkich stakeholders, zapewniająca seamless integration z naszymi key performance indicators oraz mission-critical objectives w ramach Q4 roadmap deliverables.
+               </p>
+               
+               <p style="font-size:11px; opacity:0.5; font-style:italic; margin-top:15px;">
+               (Przepraszam za powyższy akapit - miałem spotkanie z board'em i trochę się tego nachłeptałem. Ale wiecie co mam na myśli, prawda? 😅)
+               </p>
+               
+               <p style="margin-top:40px;"><strong>Bottom line:</strong></p>
+               <p>Dzisiaj świętujemy, jutro klikamy dalej. Ale dzisiaj? Dzisiaj pijemy napoje gazowane i czujemy się świetnie z tym co robimy!</p>
+               
+               <p style="text-align:center; margin:30px 0; font-size:24px;">
+               🥤 Cheers! 🥤
+               </p>
+               
+               <p style="margin-top:40px; padding-top:25px; border-top:2px solid rgba(102,126,234,0.3);">
+               <strong>🎯 ZDK Director</strong><br>
+               <span style="font-size:12px; opacity:0.7;">Head of Clicking Operations</span><br>
+               <span style="font-size:11px; opacity:0.5; font-style:italic;">"Click smarter, not harder"</span>
+               </p>
+               
+               <p style="font-size:10px; opacity:0.4; margin-top:20px; text-align:center;">
+               PS: Jutro wracamy do normalnego trybu - żadnego picia podczas pracy. To było wyjątkowe święto! 😉
+               </p>`,
+        date: '30.10.2025',
+        read: false
     }
 ];
 
@@ -382,7 +456,7 @@ function showCheatDetectedModal() {
         </div>
     `;
 
-    readMessages.delete(2);
+    readMessages.delete(4);
     updateUnreadBadge();
 
     menuNotification.style.animation = 'pulse 0.5s infinite';
@@ -646,7 +720,7 @@ function openMail(msg) {
     updateUnreadBadge();
     saveGame();
 
-    const isGodMessage = msg.id === 2;
+    const isGodMessage = msg.id === 4;
 
     mailView.innerHTML = `
         <button class="mail-back" id="mailBackBtn">← Powrót</button>
