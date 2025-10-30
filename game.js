@@ -20,15 +20,50 @@ let clicksInSecond = 0;
 let suspiciousActivity = 0;
 let lastSuspiciousTime = 0;
 let isCheater = false;
-const MAX_CLICKS_PER_SECOND = 25; // Increased from 15 to 25
-const CHEAT_THRESHOLD = 5; // Increased from 3 to 5
-const RESET_SUSPICION_TIME = 3000; // Reset suspicion after 3 seconds of normal clicking
+const MAX_CLICKS_PER_SECOND = 25;
+const CHEAT_THRESHOLD = 5;
+const RESET_SUSPICION_TIME = 3000;
 
 // ===== CLOUD SYNC SETTINGS =====
-const CLOUD_SYNC_INTERVAL = 30000; // 30 seconds
-const RANKING_REFRESH_INTERVAL = 10000; // 10 seconds
+const CLOUD_SYNC_INTERVAL = 30000;
+const RANKING_REFRESH_INTERVAL = 10000;
 let cloudSyncTimer = null;
 let rankingRefreshTimer = null;
+
+// ===== MESSAGES DATA =====
+let messages = []; // Will be loaded from Supabase
+
+// ===== LOAD MESSAGES FROM SUPABASE =====
+async function loadMessages() {
+    try {
+        const { data, error } = await supabase
+            .from('messages')
+            .select('*')
+            .lte('published_at', new Date().toISOString())
+            .order('published_at', { ascending: false });
+
+        if (error) throw error;
+
+        if (data) {
+            messages = data.map(msg => ({
+                id: msg.id,
+                from: msg.from_character,
+                subject: msg.subject,
+                preview: msg.preview,
+                body: msg.body,
+                date: new Date(msg.published_at).toLocaleDateString('pl-PL'),
+                read: false,
+                isSystemMessage: msg.is_system
+            }));
+
+            console.log(`✅ Loaded ${messages.length} messages from Supabase`);
+            updateUnreadBadge();
+        }
+
+    } catch (error) {
+        console.error('❌ Error loading messages:', error);
+    }
+}
 
 // ===== DOM ELEMENTS =====
 const button = document.getElementById('zdkButton');
@@ -258,6 +293,9 @@ async function loginUser(username, password) {
         // Load game progress from cloud
         await loadGameFromCloud();
 
+        // Load messages from Supabase
+        await loadMessages();
+
         // Hide auth screen, show title screen
         authScreen.style.display = 'none';
         titleScreen.style.display = 'flex';
@@ -304,6 +342,9 @@ async function checkAuth() {
 
         // Load game progress
         await loadGameFromCloud();
+
+        // Load messages
+        await loadMessages();
 
         // Show title screen
         authScreen.style.display = 'none';
@@ -522,278 +563,6 @@ const achievements = [
     { id: 'addict', name: 'Uzależniony', desc: 'Kliknij 2500 razy', icon: '🔥', threshold: 2500 },
     { id: 'legend', name: 'Legenda', desc: 'Kliknij 5000 razy', icon: '👑', threshold: 5000 },
     { id: 'god', name: 'Bóg Klikania', desc: 'Kliknij 10000 razy', icon: '🌟', threshold: 10000 }
-];
-
-// ===== MESSAGES DATA =====
-const messages = [
-    {
-        id: 1,
-        from: '✨ Management Board',
-        subject: 'KOMUNIKAT: Tymczasowa niedostępność modułu Patyki',
-        preview: 'Szanowni Klikacze, informujemy o planowanych pracach...',
-        body: `<p><strong>Do: Wszyscy Pracownicy</strong><br>
-               <strong>Od: Management Board</strong><br>
-               <strong>Priorytet: BARDZO NISKI</strong></p>
-               
-               <p>Szanowni Klikacze,</p>
-               <p>W związku z implementacją nowego systemu analitycznego <strong>"Patyki 2.0"</strong>, z przykrością informujemy, że moduł statystyk będzie tymczasowo niedostępny.</p>
-               
-               <p><strong>📊 Status:</strong><br>
-               Wysypały się</p>
-               
-               <p><strong>🔍 Co to są "Patyki"?</strong><br>
-               Patyki to zaawansowany system business intelligence, który pozwala na real-time monitoring KPI, benchmarking względem innych zespołów oraz deep-dive analysis Twojej produktywności. Dzięki zastosowaniu machine learning i predictive analytics, będziesz mógł zoptymalizować swoje click-through rate.</p>
-               
-               <p><strong>⚠️ Komunikat techniczny:</strong><br>
-               Próby dostępu do modułu Patyki będą skutkować komunikatem błędu. Jest to zachowanie zgodne z naszą polityką graceful degradation. Przepraszamy za wszelkie niedogodności związane z tym temporary downtime.</p>
-               
-               <p>Pozostajemy do dyspozycji w przypadku jakichkolwiek concerns.</p>
-               
-               <p style="margin-top:25px; padding-top:20px; border-top:2px solid rgba(59,130,246,0.3);">
-               <em>Best regards,</em><br>
-               <strong>Management Board</strong><br>
-               <span style="font-size:11px; opacity:0.7;">ZDK Corporation™ | Synergy Through Innovation</span></p>`,
-        date: new Date().toLocaleDateString('pl-PL'),
-        read: false
-    },
-    {
-        id: 5,
-        from: '🎯 ZDK Director',
-        subject: '🎉 Patyki są BACK! Nowy system targetów już wkrótce!',
-        preview: 'Kochani Klikacze! Mamy fantastyczne wiadomości...',
-        body: `<p><strong>Do: Wszyscy Klikacze</strong><br>
-               <strong>Od: ZDK Director</strong><br>
-               <strong>Data: ${new Date().toLocaleDateString('pl-PL')}</strong><br>
-               <strong>Priorytet: 🔥 HIGH PRIORITY</strong></p>
-               
-               <p style="font-size:20px; margin:25px 0; text-align:center;">
-               🎉✨ WIELKI COMEBACK! ✨🎉
-               </p>
-               
-               <p>Kochani Klikacze!</p>
-               
-               <p>Mam dla Was <strong>fantastyczne wiadomości</strong>! Po intensywnej pracy naszego IT Department, z dumą ogłaszam, że <strong>moduł Patyki został naprawiony i jest już DOSTĘPNY!</strong> 🚀</p>
-               
-               <p style="background:rgba(0,255,136,0.1); padding:20px; border-left:4px solid #00ff88; margin:25px 0;">
-               <strong>✅ STATUS AKTUALNY:</strong><br><br>
-               📊 <strong>Patyki 2.0: OPERATIONAL</strong><br>
-               🔄 System działa w trybie real-time<br>
-               📈 Dashboard dostępny 24/7<br>
-               ⚡ Performance: EXCELLENT<br>
-               </p>
-               
-               <p><strong>🎯 Co dalej? Targety już w drodze!</strong></p>
-               
-               <p>Obecnie wraz z Board of Directors pracujemy nad <strong>implementacją systemu targetów</strong>. To nie będą zwykłe cele - mówimy tu o comprehensive framework z:</p>
-               
-               <ul style="margin:20px 0; padding-left:30px; line-height:2;">
-               <li><strong>Dynamic targets</strong> dostosowane do Waszego performance 🎯</li>
-               <li><strong>Progress tracking</strong> w czasie rzeczywistym 📊</li>
-               <li><strong>Achievement milestones</strong> z visibility na wszystkich levels ⭐</li>
-               <li><strong>Team metrics</strong> showing collective impact 🤝</li>
-               </ul>
-               
-               <p style="background:rgba(102,126,234,0.1); padding:20px; border-radius:10px; margin:25px 0;">
-               <strong>📧 Jak tylko targety będą gotowe:</strong><br><br>
-               Dostaniecie <strong>dedykowanego maila</strong> z pełnym breakdown'em celów, metryk i expected outcomes. Wszystkie dane pojawią się automatycznie w module Patyki - wystarczy jeden klik i macie <strong>full transparency</strong>! 🎊
-               </p>
-               
-               <p><strong>⚠️ Ważna informacja: Fresh Start</strong></p>
-               
-               <p>W ramach procesu naprawy i upgrade'u systemu, <strong>wszystkie dotychczasowe kliknięcia zostały wyzerowane</strong>. Tak, wiem - to tough pill to swallow. Ale spojrzcie na to z innej perspektywy:</p>
-               
-               <p style="background:rgba(255,215,0,0.1); padding:20px; border-left:4px solid #ffd700; margin:25px 0;">
-               <strong>💪 To jest OPPORTUNITY, nie setback!</strong><br><br>
-               ✨ <strong>Clean slate</strong> - wszyscy startujemy z tego samego miejsca<br>
-               🏆 <strong>Fair competition</strong> - równe szanse dla każdego<br>
-               📈 <strong>New baselines</strong> - lepsze metrics od podstaw<br>
-               🎯 <strong>Fresh motivation</strong> - nowy kwartał, nowe cele!<br>
-               </p>
-               
-               <p><strong>🚀 Motywacja to klucz do sukcesu!</strong></p>
-               
-               <p>Pamiętajcie - to nie jest koniec, to <strong>nowy początek</strong>! W biznesie, każdy reset to szansa na <strong>improved performance</strong> i <strong>better results</strong>. Macie teraz unique opportunity żeby pokazać swój <strong>true potential</strong> od samego startu.</p>
-               
-               <p style="text-align:center; margin:30px 0; font-size:18px; color:#667eea; font-style:italic;">
-               "W świecie continuous improvement, każdy reset to upgrade,<br>a każdy początek to inwestycja w lepsze jutro."<br>
-               <span style="font-size:12px; opacity:0.7; margin-top:10px; display:block;">— Sun Tzu, "Art of Corporate Warfare"</span>
-               </p>
-               
-               <p><strong>💼 Co możecie zrobić już teraz?</strong></p>
-               
-               <ol style="margin:20px 0; padding-left:30px; line-height:2;">
-               <li>Otwórzcie <strong>moduł Patyki</strong> i zobaczcie nowy dashboard 📊</li>
-               <li>Zacznijcie <strong>budować swoje metrics</strong> od zera 📈</li>
-               <li>Stay tuned na <strong>mail z targetami</strong> - coming soon! 📧</li>
-               <li>Keep clicking - każde kliknięcie się liczy! 💪</li>
-               </ol>
-               
-               <p style="background:rgba(255,255,255,0.05); padding:25px; border-radius:15px; margin:25px 0; font-family:monospace; font-size:13px; line-height:1.8;">
-               Leveraging our cutting-edge analytics infrastructure, we're implementing a paradigm shift in performance measurement methodology. The synergistic integration of real-time data visualization with predictive modeling algorithms enables unprecedented transparency and actionable insights. This transformational approach to KPI tracking represents a quantum leap in our organizational capability to optimize resource allocation and maximize ROI across all operational verticals. Moving forward, our focus on data-driven decision making will empower each stakeholder to achieve peak performance through continuous feedback loops and agile metric refinement.
-               </p>
-               
-               <p style="font-size:11px; opacity:0.5; font-style:italic; margin-top:15px;">
-               (Znowu po spotkaniu z board'em... Ale serio - Patyki działają i będzie SUPER! 😄)
-               </p>
-               
-               <p style="margin-top:40px;"><strong>Bottom line:</strong></p>
-               <p>System naprawiony ✅<br>
-               Targety w przygotowaniu ⏳<br>
-               Wyniki wyzerowane 🔄<br>
-               Motywacja na max 🚀<br>
-               <strong>Let's make this quarter LEGENDARY!</strong> 🏆</p>
-               
-               <p style="text-align:center; margin:30px 0; font-size:28px;">
-               🎯 Time to SHINE! 🎯
-               </p>
-               
-               <p style="margin-top:40px; padding-top:25px; border-top:2px solid rgba(102,126,234,0.3);">
-               <strong>🎯 ZDK Director</strong><br>
-               <span style="font-size:12px; opacity:0.7;">Head of Clicking Operations</span><br>
-               <span style="font-size:11px; opacity:0.5; font-style:italic;">"Every click counts, every reset matters"</span>
-               </p>
-               
-               <p style="font-size:10px; opacity:0.4; margin-top:20px; text-align:center;">
-               PS: Jeśli macie jakieś concerns regarding the reset - my door is always open! (Metaforycznie, bo pracuję remote.) 💻
-               </p>`,
-        date: new Date().toLocaleDateString('pl-PL'),
-        read: false
-    },
-    {
-        id: 4,
-        from: '⚡ Bóg Prądu',
-        subject: 'Dziwne ruchy w systemie - reset dla wszystkich',
-        preview: 'Zauważyliśmy dziwne rzeczy w systemie kliknięć...',
-        body: `<p><strong>Do: Wszyscy Pracownicy</strong><br>
-               <strong>Od: Bóg Prądu</strong><br>
-               <strong>Data: ${new Date().toLocaleDateString('pl-PL')}</strong></p>
-               
-               <p style="font-size:18px; margin:25px 0;">Cześć Zespół! 👋</p>
-               
-               <p>Mam dla Was nie do końca dobre wieści. W ostatnim czasie zauważyliśmy <strong>dziwne ruchy</strong> w naszym systemie śledzenia kliknięć.</p>
-               
-               <p><strong>Co się dzieje?</strong><br>
-               Pojawiły się podejrzane wzorce aktywności - ktoś (albo kilka osób) klika <em>dziwnie szybko</em>. Nie mówimy tu o super zdolnościach manualnych, tylko o czymś... nienaturalnym. 🤔</p>
-               
-               <p style="background:rgba(255,215,0,0.1); padding:15px; border-left:4px solid #ffd700; margin:20px 0;">
-               <strong>🔍 Problem:</strong><br>
-               Nie wiemy <strong>kto dokładnie</strong> kombinuje. System widzi tylko dziwne liczby, ale nie potrafi wskazać palcem konkretnej osoby.
-               </p>
-               
-               <p><strong>Co robimy?</strong><br>
-               Po długich naradach z zarządem doszliśmy do wniosku, że <strong>najsprawiedliwiej będzie wyzerować wyniki wszystkim</strong>. Tak, wiem - trochę to niesprawiedliwe dla tych, którzy grali uczciwie. Ale inaczej byłoby jeszcze gorzej - nie możemy pozwolić żeby ktoś miał nieuczciwą przewagę.</p>
-               
-               <p style="background:rgba(255,107,107,0.1); padding:15px; border-left:4px solid #ff6b6b; margin:20px 0;">
-               <strong>⚠️ Co się stanie:</strong><br><br>
-               Wszystkim graczom zresetujemy:<br>
-               • Licznik kliknięć<br>
-               • Premie<br>
-               • Osiągnięcia<br>
-               • Poziom prestige<br>
-               <br>
-               Wszyscy wracamy do <strong>punktu startu</strong>. Czysta karta. 🔄
-               </p>
-               
-               <p><strong>Dlaczego wszyscy?</strong><br>
-               Bo to jedyna uczciwa opcja. Jeśli nie wiemy kto oszukiwał, nie możemy karać losowo. A pozostawienie obecnych wyników byłoby niesprawiedliwe wobec tych, którzy grali fair. Więc... przepraszam, ale reset dla wszystkich.</p>
-               
-               <p style="color:#ffd700; background:rgba(255,215,0,0.1); padding:15px; border-left:4px solid #ffd700; margin:20px 0;">
-               <strong>💪 Dobra wiadomość:</strong><br>
-               Od teraz system będzie <strong>pilnował</strong> żeby takie dziwne ruchy się nie powtarzały. Jeśli ktoś znowu spróbuje kombinować - system to wyłapie i będzie koniec zabawy dla tej osoby.
-               </p>
-               
-               <p><strong>Co dalej?</strong><br>
-               Wszyscy zaczynamy od zera. To będzie <strong>fair start</strong> dla każdego. Gramy uczciwie, bez żadnych sztuczek. Niech wygra najlepszy (i najbardziej wytrwały) klikacz! 🏆</p>
-               
-               <p>Wiem że to frustrujące dla tych z Was, którzy włożyli w to dużo pracy. Naprawdę przykro mi. Ale lepiej wszyscy od nowa niż pozwolić komuś kombinować. Rozumiecie? 🙏</p>
-               
-               <p style="font-size:13px; opacity:0.7; margin-top:30px; padding-top:20px; border-top:2px solid rgba(255,215,0,0.3);">
-               <strong>PS:</strong> Jeśli to Ty kombinowałeś/aś - teraz masz drugą szansę. Graj fair. System patrzy. ⚡
-               </p>
-               
-               <p style="margin-top:30px; padding-top:20px; border-top:2px solid rgba(59,130,246,0.3);">
-               <strong>⚡ Bóg Prądu</strong><br>
-               <span style="font-size:12px; opacity:0.7;">Ten co pilnuje porządku w systemie</span><br>
-               <span style="font-size:11px; opacity:0.5; font-style:italic;">"Gramy fair albo wcale"</span>
-               </p>`,
-        date: new Date().toLocaleDateString('pl-PL'),
-        read: false,
-        isSystemMessage: true
-    },
-    {
-        id: 3,
-        from: '🎯 ZDK Director',
-        subject: '🥤 Święto Napojów Wyskokowych - dzisiaj możesz pić przy klikaniu!',
-        preview: 'Kochani Klikacze! Z okazji Święta Napojów Wyskokowych...',
-        body: `<p><strong>Do: Wszyscy Klikacze</strong><br>
-               <strong>Od: ZDK Director</strong><br>
-               <strong>Data: 30.10.2025</strong><br>
-               <strong>Priorytet: 🔥 CELEBRATION MODE</strong></p>
-               
-               <p style="font-size:20px; margin:25px 0; text-align:center;">
-               🥤🎉 Kochani Klikacze! 🎉🥤
-               </p>
-               
-               <p>Dzisiaj mamy do ogłoszenia coś <strong>absolutnie wyjątkowego</strong>! Jak zapewne wiecie, 30 października to <strong>Międzynarodowe Święto Napojów Wyskokowych</strong> (International Carbonated Beverage Day).</p>
-               
-               <p style="background:rgba(255,215,0,0.1); padding:20px; border-left:4px solid #ffd700; margin:25px 0;">
-               <strong>🥤 WYJĄTKOWE OGŁOSZENIE:</strong><br><br>
-               Z okazji tego niezwykłego święta, <strong>dzisiaj wyjątkowo MOŻECIE PIĆ podczas klikania!</strong><br><br>
-               Tak, dobrze czytacie! Dziś możecie się orzeźwić, zregenerować i kontynuować swoją świetną pracę z napojem gazowanym w ręku! 🎊<br><br>
-               <span style="font-size:12px; opacity:0.7; font-style:italic;">*Napoje we własnym zakresie. Firma nie pokrywa kosztów. Można kupić w automacie na parterze (ceny rynkowe + 300% markup za convenience). Alternatywnie: woda z kranu jest za darmo! 💧</span>
-               </p>
-               
-               <p><strong>💪 Motywacja to podstawa!</strong></p>
-               
-               <p>Pamiętajcie, że każde kliknięcie to nie tylko liczba w systemie - to Wasze <strong>zaangażowanie</strong>, Wasza <strong>determinacja</strong>, Wasz <strong>wkład w sukces całego zespołu</strong>!</p>
-               
-               <p>Kiedy myślicie, że już nie dacie rady - weźcie głęboki oddech (lub łyk gazowanego napoju!), popatrzcie na swój licznik kliknięć i przypomnijcie sobie:</p>
-               
-               <ul style="margin:20px 0; padding-left:30px; line-height:2;">
-               <li><strong>Każde kliknięcie ma znaczenie</strong> 💼</li>
-               <li><strong>Premia czeka na końcu tunelu</strong> 💰</li>
-               <li><strong>Prestige to nie tylko status, to styl życia</strong> ⭐</li>
-               <li><strong>Razem jesteśmy silniejsi</strong> 🤝</li>
-               </ul>
-               
-               <p style="background:rgba(102,126,234,0.1); padding:20px; border-radius:10px; margin:25px 0; text-align:center;">
-               <em style="font-size:18px; color:#667eea;">"Nie liczą się spadające wskaźniki, nie liczą się resetujące się premie - liczy się to, że <strong>nie przestajemy klikać</strong>."</em><br>
-               <span style="font-size:12px; opacity:0.7; margin-top:10px; display:block;">— Confucius, prawdopodobnie</span>
-               </p>
-               
-               <p><strong>🚀 Patrzcie w przyszłość!</strong></p>
-               
-               <p>Ten kwartał będzie przełomowy. Wiem to, czuję to, <strong>widzę to w Waszych licznikach</strong>. Jesteście niesamowici. Wasza produktywność, Wasze KPI, Wasz click-through rate - wszystko to świadczy o tym, że jesteśmy na dobrej drodze do osiągnięcia naszych celów.</p>
-               
-               <p>A teraz, żeby nie było że tylko pusta gadka - przechodzę do sedna sprawy:</p>
-               
-               <p style="background:rgba(255,255,255,0.05); padding:25px; border-radius:15px; margin:25px 0; font-family:monospace; font-size:13px; line-height:1.8;">
-               Współczesna rzeczywistość biznesowa wymaga od nas nie tylko adaptacji do dynamicznie zmieniających się warunków rynkowych, ale również proaktywnego podejścia do implementacji innowacyjnych rozwiązań w obszarze digital transformation. W kontekście naszych ongoing initiatives, należy podkreślić kluczową rolę synergii międzydziałowej oraz holistycznego approach do optymalizacji workflow. Leverage naszych core competencies w zakresie agile methodology pozwala na continuous improvement i sustainable growth. Moving forward, będziemy focus'ować się na strategic alignment z long-term vision, jednocześnie maintain'ując flexibility w short-term execution. To win-win situation dla wszystkich stakeholders, zapewniająca seamless integration z naszymi key performance indicators oraz mission-critical objectives w ramach Q4 roadmap deliverables.
-               </p>
-               
-               <p style="font-size:11px; opacity:0.5; font-style:italic; margin-top:15px;">
-               (Przepraszam za powyższy akapit - miałem spotkanie z board'em i trochę się tego nachłeptałem. Ale wiecie co mam na myśli, prawda? 😅)
-               </p>
-               
-               <p style="margin-top:40px;"><strong>Bottom line:</strong></p>
-               <p>Dzisiaj świętujemy, jutro klikamy dalej. Ale dzisiaj? Dzisiaj pijemy napoje gazowane i czujemy się świetnie z tym co robimy!</p>
-               
-               <p style="text-align:center; margin:30px 0; font-size:24px;">
-               🥤 Cheers! 🥤
-               </p>
-               
-               <p style="margin-top:40px; padding-top:25px; border-top:2px solid rgba(102,126,234,0.3);">
-               <strong>🎯 ZDK Director</strong><br>
-               <span style="font-size:12px; opacity:0.7;">Head of Clicking Operations</span><br>
-               <span style="font-size:11px; opacity:0.5; font-style:italic;">"Click smarter, not harder"</span>
-               </p>
-               
-               <p style="font-size:10px; opacity:0.4; margin-top:20px; text-align:center;">
-               PS: Jutro wracamy do normalnego trybu - żadnego picia podczas pracy. To było wyjątkowe święto! 😉
-               </p>`,
-        date: '30.10.2025',
-        read: false
-    }
 ];
 
 // ===== TIME OF DAY SYSTEM =====

@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ Bóg Prądu - Admin Panel</title>
+    <link rel="stylesheet" href="bogpradu.css">
+
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div id="loginScreen">
+    <div class="login-container">
+        <div class="logo">⚡</div>
+        <h1>BÓG PRĄDU</h1>
+        <p class="subtitle">Admin Panel - ZDK Mail System</p>
+
+        <div class="login-form">
+            <input type="text" id="adminUsername" placeholder="Username" class="input">
+            <input type="password" id="adminPassword" placeholder="Password" class="input">
+            <button id="loginBtn" class="btn-primary">⚡ ZALOGUJ</button>
+            <div id="loginError" class="error"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Admin Panel -->
+<div id="adminPanel" style="display: none;">
+    <div class="header">
+        <div class="header-left">
+            <span class="logo-small">⚡</span>
+            <h1>Bóg Prądu</h1>
+        </div>
+        <div class="header-right">
+            <span id="adminName">Admin</span>
+            <button id="logoutBtn" class="btn-logout">Wyloguj</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="send">📝 Wyślij Mail</button>
+            <button class="tab" data-tab="sent">📬 Wysłane Maile</button>
+        </div>
+
+        <!-- Send Mail Tab -->
+        <div id="sendTab" class="tab-content active">
+            <div class="form-section">
+                <h2>✉️ Nowa Wiadomość</h2>
+
+                <div class="form-group">
+                    <label>Od kogo:</label>
+                    <select id="fromCharacter" class="input">
+                        <option value="⚡ Bóg Prądu">⚡ Bóg Prądu</option>
+                        <option value="🎯 ZDK Director">🎯 ZDK Director</option>
+                        <option value="✨ Management Board">✨ Management Board</option>
+                        <option value="👔 HR Department">👔 HR Department</option>
+                        <option value="💻 IT Support">💻 IT Support</option>
+                        <option value="📊 Data Analytics Team">📊 Data Analytics Team</option>
+                        <option value="🏢 CEO Office">🏢 CEO Office</option>
+                        <option value="💰 Finance Department">💰 Finance Department</option>
+                        <option value="🎨 Creative Team">🎨 Creative Team</option>
+                        <option value="📈 Marketing">📈 Marketing</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Temat:</label>
+                    <input type="text" id="subject" class="input" placeholder="Tytuł wiadomości">
+                </div>
+
+                <div class="form-group">
+                    <label>Preview (krótki opis):</label>
+                    <input type="text" id="preview" class="input" placeholder="Krótki opis widoczny na liście maili...">
+                </div>
+
+                <div class="form-group">
+                    <label>Treść wiadomości:</label>
+                    <div class="editor-toolbar">
+                        <button type="button" class="tool-btn" onclick="insertTag('p')">¶ Akapit</button>
+                        <button type="button" class="tool-btn" onclick="insertTag('strong')"><strong>B</strong></button>
+                        <button type="button" class="tool-btn" onclick="insertTag('em')"><em>I</em></button>
+                        <button type="button" class="tool-btn" onclick="insertTag('br')">↵ Nowa linia</button>
+                    </div>
+                    <textarea id="bodyContent" class="textarea" rows="15" placeholder="Wpisz treść wiadomości w HTML...
+
+Przykład:
+<p><strong>Do: Wszyscy Pracownicy</strong><br>
+<strong>Od: Bóg Prądu</strong></p>
+
+<p>Witajcie! To jest testowa wiadomość.</p>
+
+<p><strong>Ważna informacja:</strong><br>
+Tutaj wpisz ważne informacje.</p>"></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="isSystem">
+                            <span>🚨 Wiadomość systemowa (czerwona z animacją)</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Publikacja:</label>
+                    <div class="radio-group">
+                        <label class="radio-label">
+                            <input type="radio" name="publishTime" value="now" checked>
+                            <span>⚡ Teraz</span>
+                        </label>
+                        <label class="radio-label">
+                            <input type="radio" name="publishTime" value="scheduled">
+                            <span>📅 Zaplanowana</span>
+                        </label>
+                    </div>
+                    <input type="datetime-local" id="scheduledDate" class="input" style="display:none; margin-top:10px;">
+                </div>
+
+                <div class="form-actions">
+                    <button id="sendMailBtn" class="btn-primary">⚡ WYŚLIJ MAIL</button>
+                    <button id="clearFormBtn" class="btn-secondary">🗑️ Wyczyść</button>
+                </div>
+
+                <div id="sendStatus" class="status"></div>
+            </div>
+        </div>
+
+        <!-- Sent Mails Tab -->
+        <div id="sentTab" class="tab-content">
+            <div class="sent-section">
+                <div class="section-header">
+                    <h2>📬 Wysłane Wiadomości</h2>
+                    <button id="refreshMailsBtn" class="btn-secondary">🔄 Odśwież</button>
+                </div>
+
+                <div id="sentMailsList" class="mails-list">
+                    <div class="loading">Ładowanie...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="supabase-config.js"></script>
+<script src="bogpradu.js"></script>
+
+</body>
+</html>
